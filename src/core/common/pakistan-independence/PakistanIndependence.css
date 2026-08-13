@@ -1,0 +1,144 @@
+/* =========================================================
+   PAKISTAN INDEPENDENCE DAY (14th AUGUST) TEMPORARY THEME
+   ========================================================= */
+
+:root {
+  --pk-green-dark: #00361a;
+  --pk-green-main: #01411C;
+  --pk-green-light: #016633;
+  --pk-green-emerald: #0d8a4e;
+  --pk-green-accent: #198754;
+  --pk-gold: #ffc107;
+}
+
+/* 3D Moving / Waving Pakistani Flag Animation */
+.moving-pakistan-flag {
+  animation: flagWave3D 2.8s ease-in-out infinite alternate;
+  transform-origin: left center;
+  display: inline-block;
+  will-change: transform, filter;
+  transition: transform 0.3s ease;
+}
+
+@keyframes flagWave3D {
+  0% {
+    transform: perspective(400px) rotateY(-10deg) rotateX(3deg) skewY(1.5deg) translateY(0);
+    filter: drop-shadow(2px 4px 8px rgba(0, 65, 28, 0.45));
+  }
+  25% {
+    transform: perspective(400px) rotateY(4deg) rotateX(-2deg) skewY(-1deg) translateY(-2px);
+    filter: drop-shadow(4px 7px 12px rgba(0, 65, 28, 0.6));
+  }
+  50% {
+    transform: perspective(400px) rotateY(12deg) rotateX(-4deg) skewY(-2.5deg) translateY(-4px);
+    filter: drop-shadow(5px 9px 15px rgba(0, 65, 28, 0.65));
+  }
+  75% {
+    transform: perspective(400px) rotateY(-4deg) rotateX(2deg) skewY(1deg) translateY(-1px);
+    filter: drop-shadow(3px 5px 10px rgba(0, 65, 28, 0.5));
+  }
+  100% {
+    transform: perspective(400px) rotateY(-10deg) rotateX(3deg) skewY(1.5deg) translateY(0);
+    filter: drop-shadow(2px 4px 8px rgba(0, 65, 28, 0.45));
+  }
+}
+
+/* Top Celebration Banner */
+.pak-independence-banner {
+  background: linear-gradient(90deg, #002612 0%, #01411C 30%, #016633 60%, #01411C 85%, #002612 100%);
+  color: #ffffff;
+  padding: 8px 20px;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2.5px solid #0d8a4e;
+  box-shadow: 0 4px 14px rgba(0, 54, 26, 0.35);
+  position: relative;
+  z-index: 1060;
+  animation: bannerSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pak-independence-banner .banner-text {
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes bannerSlideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Floating Bottom-Right Flag Widget */
+.pak-floating-flag-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  background: rgba(0, 45, 21, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid #0d8a4e;
+  border-radius: 30px;
+  padding: 8px 16px 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 25px rgba(0, 65, 28, 0.45);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+  animation: pulseGlow 3s infinite alternate;
+}
+
+.pak-floating-flag-widget:hover {
+  transform: translateY(-5px) scale(1.04);
+  box-shadow: 0 12px 32px rgba(0, 65, 28, 0.65);
+  border-color: #ffc107;
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 6px 20px rgba(0, 65, 28, 0.4);
+  }
+  100% {
+    box-shadow: 0 10px 30px rgba(13, 138, 78, 0.6), 0 0 12px rgba(255, 193, 7, 0.3);
+  }
+}
+
+/* Theme Color Overrides for Header and Main Buttons */
+body.pakistan-independence-theme .header {
+  background: linear-gradient(135deg, #00361a 0%, #01411C 45%, #016633 100%) !important;
+  border-bottom: 2px solid #0d8a4e !important;
+}
+
+body.pakistan-independence-theme .header .header-left {
+  background: #002d15 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.pakistan-independence-theme .btn-primary {
+  background: linear-gradient(135deg, #01411C 0%, #016633 100%) !important;
+  border-color: #01411C !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(1, 65, 28, 0.3) !important;
+}
+
+body.pakistan-independence-theme .btn-primary:hover,
+body.pakistan-independence-theme .btn-primary:focus {
+  background: linear-gradient(135deg, #002d15 0%, #01411C 100%) !important;
+  border-color: #002d15 !important;
+  box-shadow: 0 6px 16px rgba(0, 54, 26, 0.45) !important;
+}
+
+body.pakistan-independence-theme .badge.bg-primary {
+  background-color: #016633 !important;
+}

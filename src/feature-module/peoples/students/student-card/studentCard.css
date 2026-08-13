@@ -1,0 +1,205 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+.student-card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  padding: 20px;
+}
+
+.student-id-card {
+  font-family: 'Inter', sans-serif;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
+  page-break-inside: avoid;
+  border: 1px solid #ddd;
+}
+
+.official-font {
+  font-family: 'RevuenCustom', sans-serif !important;
+}
+
+/* Template 1: Vertical (CR80 standard vertical) */
+.student-id-card.template-vertical {
+  width: 2.125in;
+  height: 3.375in;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.template-vertical .card-header {
+  background-color: #0d6efd;
+  color: white;
+  width: 100%;
+  padding: 8px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.template-vertical .card-photo {
+  width: 60px;
+  height: 60px;
+  border-radius: 0;
+  object-fit: cover;
+  border: 2px solid #0d6efd;
+  margin-bottom: 8px;
+}
+
+.template-vertical .card-body {
+  padding: 0 8px;
+  width: 100%;
+}
+
+.template-vertical .student-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.template-vertical .student-info {
+  font-size: 9px;
+  color: #555;
+  margin: 2px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.template-vertical .card-footer {
+  margin-top: auto;
+  width: 100%;
+  background-color: #f8f9fa;
+  padding: 6px;
+  font-size: 8px;
+  border-top: 1px solid #ddd;
+}
+
+
+/* Template 2: Horizontal (CR80 standard horizontal) */
+.student-id-card.template-horizontal {
+  width: 3.375in;
+  height: 2.125in;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.template-horizontal .card-sidebar {
+  background-color: #198754;
+  color: white;
+  height: 100%;
+  width: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.template-horizontal .card-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  padding: 10px;
+  gap: 12px;
+}
+
+.template-horizontal .card-photo {
+  width: 65px;
+  height: 65px;
+  border-radius: 0;
+  object-fit: cover;
+  border: 2px solid #198754;
+}
+
+.template-horizontal .card-details {
+  flex-grow: 1;
+}
+
+.template-horizontal .student-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #333;
+  text-align: left;
+}
+
+.template-horizontal .student-info {
+  font-size: 9px;
+  color: #555;
+  margin: 3px 0;
+  text-align: left;
+}
+
+.card-qr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 8px;
+  border-left: 1px solid #eee;
+}
+
+.template-horizontal .card-footer {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 4px 8px;
+  font-size: 8px;
+  background-color: #f8f9fa;
+  border-top-left-radius: 8px;
+  border-top: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+}
+
+/* Print Styles */
+@media print {
+  /* Hide everything else */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Only show the print container and its contents */
+  #printable-cards-container, #printable-cards-container * {
+    visibility: visible;
+  }
+  
+  /* Reset positioning for print */
+  #printable-cards-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    justify-content: flex-start;
+    gap: 0;
+  }
+  
+  /* Ensure exact dimensions and page breaks */
+  .student-id-card {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin: 5px; /* slight margin for cutting */
+    float: left; /* Allow wrapping on print page */
+  }
+
+  /* Optional: Force background colors to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
