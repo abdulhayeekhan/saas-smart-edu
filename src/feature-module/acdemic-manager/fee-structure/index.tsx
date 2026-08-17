@@ -16,6 +16,7 @@ import { feesData } from "../../../core/data/json/feesData";
 import FeesModal from "./feemodel";
 import TooltipOption from "../../../core/common/tooltipOption";
 import { GetFeeByCampusSession, GetFeeByGradeSession } from "../../../store/apps/fee-structure";
+import { GetCampusByID } from "../../../store/apps/campus-management";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "../../../store";
 import useRegionsList from "../../../core/common/selectoption/master/useRegions";
@@ -45,11 +46,35 @@ const FeesStructure = () => {
     const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
     const dispatch = useDispatch<AppDispatch>();
     const { data, loading } = useSelector((state: RootState) => state.feeStructure);
-    const userInfoString = localStorage.getItem("userData");
-    const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
-    const loginInfo = userInfo?.data
-    const createdBy = loginInfo?.id
-    const [regionId, setRegionId] = useState(loginInfo?.userLevel === 2 ? loginInfo?.userLevelId : null)
+    const loginInfoObj = JSON.parse(localStorage.getItem("loginInfo") || "{}");
+    const userDataObj = JSON.parse(localStorage.getItem("userData") || "{}");
+
+    const userLevel = Number(loginInfoObj?.userLevel || userDataObj?.data?.userLevel || 0);
+    const userLevelId = Number(loginInfoObj?.userLevelId || userDataObj?.data?.userLevelId || 0);
+    const loginInfo = userDataObj?.data || loginInfoObj;
+    const createdBy = loginInfo?.id;
+
+    const [campusRegionId, setCampusRegionId] = useState<number>(
+        Number(
+            loginInfoObj?.regionId ||
+            userDataObj?.data?.regionId ||
+            userDataObj?.data?.tblCampus?.regionId ||
+            userDataObj?.data?.campus?.regionId ||
+            0
+        )
+    );
+
+    useEffect(() => {
+        if (userLevel === 3 && userLevelId) {
+            dispatch(GetCampusByID(userLevelId)).then((res: any) => {
+                if (res.payload && res.payload.regionId) {
+                    setCampusRegionId(Number(res.payload.regionId));
+                }
+            });
+        }
+    }, [userLevel, userLevelId, dispatch]);
+
+    const [regionId, setRegionId] = useState<number>(userLevel === 2 ? userLevelId : (userLevel === 3 ? campusRegionId : 0));
     const handleReset = (e: React.MouseEvent) => {
         e.preventDefault(); // Prevents the Link from jumping to the top of the page
         setFilter({
@@ -59,21 +84,28 @@ const FeesStructure = () => {
         });
     };
     const handleSelectRegion = (name: string, option: any) => {
-        setRegionId(option?.value ?? 0);
-    }
-    const effectiveRegionId = loginInfo?.userLevel === 2 ? loginInfo?.userLevelId : (regionId || loginInfo?.regionId);
+        const selectedRId = Number(option?.value ?? 0);
+        setRegionId(selectedRId);
+        setFilter(prev => ({
+            ...prev,
+            campusId: 0,
+            sessionId: 0,
+            gradeId: 0
+        }));
+    };
+    const effectiveRegionId = userLevel === 2 ? userLevelId : (userLevel === 3 ? (campusRegionId || regionId) : regionId);
     const regionsList = useRegionsList();
     const grades = useAcademicGrades(effectiveRegionId);
     const sessions = useAcademicSessions(effectiveRegionId);
     const { lastSessionId } = useLastAcademicSession();
     const campuses = useCampusesList(effectiveRegionId);
     const sessionId = lastSessionId;
-    const [campusId, setCampusId] = useState(loginInfo?.userLevel === 3 ? loginInfo?.userLevelId : 0)
+    const [campusId, setCampusId] = useState(userLevel === 3 ? userLevelId : 0);
     const [filter, setFilter] = useState<FeeFilter>({
         sessionId: 0,
         gradeId: 0,
         campusId
-    })
+    });
     const [selectedRecord, setSelectedRecord] = useState<any>(null);
     const handleDeleteClick = (record: any) => {
         setSelectedRecord(record);
@@ -294,7 +326,7 @@ const FeesStructure = () => {
                                             </div>
                                             <div className="p-3 border-bottom">
                                                 <div className="row">
-                                                    {loginInfo?.userLevel === 1 && (
+                                                    {userLevel === 1 && (
                                                         <div className="col-md-12">
                                                             <div className="mb-3">
                                                                 <label className="form-label">Region</label>
@@ -302,12 +334,12 @@ const FeesStructure = () => {
                                                                     className="select"
                                                                     options={regionsList}
                                                                     onChange={(option) => handleSelectRegion('regions', option)}
-                                                                    value={regionId ? regionsList.find(r => r.value === regionId) : regionsList[0]}
+                                                                    value={regionId ? regionsList.find(r => Number(r.value) === Number(regionId)) : regionsList[0]}
                                                                 />
                                                             </div>
                                                         </div>
                                                     )}
-                                                    {(loginInfo?.userLevel === 1 || loginInfo?.userLevel === 2) && (
+                                                    {(userLevel === 1 || userLevel === 2) && (
                                                         <div className="col-md-12">
                                                             <div className="mb-3">
                                                                 <label className="form-label">Campus</label>
@@ -315,7 +347,7 @@ const FeesStructure = () => {
                                                                     className="select"
                                                                     options={campuses}
                                                                     onChange={(opt: any) => handleChange('campusId', opt)}
-                                                                    value={filter?.campusId ? campuses.find(c => c.value === filter.campusId) : campuses[0]}
+                                                                    value={filter?.campusId ? campuses.find(c => Number(c.value) === Number(filter.campusId)) : campuses[0]}
                                                                 />
                                                             </div>
                                                         </div>

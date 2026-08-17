@@ -42,7 +42,6 @@ const DiscountTransactionSetting: React.FC = () => {
     const discountSettingdata = useSelector((state: RootState) => state.discountSettings);
     const discountSettingList: DiscountSetting[] = discountSettingdata.data || [];
 
-    console.log('Discount Settings from Redux:', discountSettingList);
 
     // Local State
     const [updateDisSetting, setUpdateDisSetting] = useState<DiscountSetting[]>([]);
@@ -92,13 +91,19 @@ const DiscountTransactionSetting: React.FC = () => {
         });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (updateDisSetting.length > 0) dispatch(UpdateDiscountSettings(updateDisSetting));
-        if (addDisSettings.length > 0) dispatch(AddDiscountSettings(addDisSettings));
+        try {
+            if (updateDisSetting.length > 0) await dispatch(UpdateDiscountSettings(updateDisSetting)).unwrap();
+            if (addDisSettings.length > 0) await dispatch(AddDiscountSettings(addDisSettings)).unwrap();
 
-        toast.success('Discount transaction settings Updated');
-        // navigate('/settings/HO/');
+            toast.success('Discount transaction settings updated successfully');
+            setUpdateDisSetting([]);
+            setAddDisSettings([]);
+            dispatch(GetAllDiscountSettings());
+        } catch (error: any) {
+            toast.error(error?.message || 'Failed to update discount transaction settings');
+        }
     };
 
     return (
@@ -124,9 +129,26 @@ const DiscountTransactionSetting: React.FC = () => {
                                             <tbody>
                                                 {feeTypes?.map((fee) => (
                                                     discountTypes?.map((disc) => {
+                                                        const feeId = Number(fee?.value);
+                                                        const discId = Number(disc?.value);
+
                                                         const existingSetting = discountSettingList.find(
-                                                            s => s.feeTypeId === Number(fee?.value) && s.discountTypeId === Number(disc.value)
+                                                            s => s.feeTypeId === feeId && s.discountTypeId === discId
                                                         );
+                                                        const updatedSetting = updateDisSetting.find(
+                                                            s => s.feeTypeId === feeId && s.discountTypeId === discId
+                                                        );
+                                                        const addedSetting = addDisSettings.find(
+                                                            s => s.feeTypeId === feeId && s.discountTypeId === discId
+                                                        );
+
+                                                        const currentValue = updatedSetting
+                                                            ? updatedSetting.receiptDebitAccount
+                                                            : addedSetting
+                                                            ? addedSetting.receiptDebitAccount
+                                                            : existingSetting
+                                                            ? existingSetting.receiptDebitAccount
+                                                            : "";
 
                                                         return (
                                                             <tr
@@ -137,18 +159,20 @@ const DiscountTransactionSetting: React.FC = () => {
                                                                 <td>
                                                                     <select
                                                                         className="form-select form-select-sm"
-                                                                        value={existingSetting ? existingSetting.receiptDebitAccount : ""}
+                                                                        value={currentValue ?? ""}
                                                                         onChange={(e) => {
                                                                             const val = e.target.value;
                                                                             if (!val) return;
+                                                                            const numVal = Number(val);
 
-                                                                            // Assuming your handlers work with the raw ID now
-                                                                            existingSetting
-                                                                                ? handleRreceiptDebitAccountUpdate(Number(val), Number(fee?.value), Number(disc.value), Number(existingSetting.id))
-                                                                                : handleRreceiptDebitAccountAdd(Number(val), Number(fee.value), Number(disc.value));
+                                                                            if (existingSetting && existingSetting.id) {
+                                                                                handleRreceiptDebitAccountUpdate(numVal, feeId, discId, Number(existingSetting.id));
+                                                                            } else {
+                                                                                handleRreceiptDebitAccountAdd(numVal, feeId, discId);
+                                                                            }
                                                                         }}
                                                                     >
-                                                                        
+
                                                                         {campusDis4thLevel?.map((opt) => (
                                                                             <option key={opt.value} value={opt.value}>
                                                                                 {opt.label}

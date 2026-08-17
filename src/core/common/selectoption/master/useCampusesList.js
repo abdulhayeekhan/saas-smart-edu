@@ -5,16 +5,26 @@ import axios from "axios";
 const baseURL = process.env.REACT_APP_API_BASE_URL;
 
 export const useCampusesList = (customRegionId) => {
-  const { data } = useSelector((state) => state.campus);
+  const { data } = useSelector((state: any) => state.campus);
   const [localCampuses, setLocalCampuses] = useState([]);
 
-  const userInfoString = localStorage.getItem('userData');
-  const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
-  const userLevel = userInfo?.data?.userLevel;
-  const userLevelId = userInfo?.data?.userLevelId;
+  const loginInfoString = localStorage.getItem('loginInfo');
+  const userDataString = localStorage.getItem('userData');
+  const loginInfo = loginInfoString ? JSON.parse(loginInfoString) : {};
+  const userData = userDataString ? JSON.parse(userDataString) : {};
 
-  // Regional Manager (userLevel === 2) is strictly bound to their assigned regionId
-  const effectiveRegionId = customRegionId !== undefined ? customRegionId : (userLevel === 2 ? userLevelId : undefined);
+  const userLevel = Number(loginInfo?.userLevel || userData?.data?.userLevel || userData?.userLevel || 0);
+  const userLevelId = Number(loginInfo?.userLevelId || userData?.data?.userLevelId || userData?.userLevelId || 0);
+
+  // Regional Manager (userLevel === 2) is strictly bound to their assigned regionId (userLevelId)
+  let effectiveRegionId;
+  if (userLevel === 2 && userLevelId) {
+    effectiveRegionId = userLevelId;
+  } else if (customRegionId !== undefined && customRegionId !== null && customRegionId !== "" && Number(customRegionId) > 0) {
+    effectiveRegionId = Number(customRegionId);
+  } else {
+    effectiveRegionId = undefined;
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -46,28 +56,35 @@ export const useCampusesList = (customRegionId) => {
   }, [effectiveRegionId]);
 
   const options = useMemo(() => {
-    const sourceData = localCampuses.length > 0 ? localCampuses : (data || []);
-    let filteredData = sourceData;
+    let sourceData = [];
 
-    if (effectiveRegionId) {
-      const regionNum = Number(effectiveRegionId);
-      const matches = filteredData.filter(
-        (item) =>
-          Number(item?.regionId) === regionNum ||
-          Number(item?.regionID) === regionNum ||
-          Number(item?.region_id) === regionNum ||
-          Number(item?.region?.id) === regionNum
-      );
-      if (matches.length > 0) {
-        filteredData = matches;
+    if (localCampuses && Array.isArray(localCampuses) && localCampuses.length > 0) {
+      sourceData = localCampuses;
+    } else if (data && Array.isArray(data) && data.length > 0) {
+      if (effectiveRegionId) {
+        const regionNum = Number(effectiveRegionId);
+        const matches = data.filter(
+          (item: any) =>
+            Number(
+              item?.regionId ||
+              item?.regionID ||
+              item?.region_id ||
+              item?.region?.id ||
+              item?.tblRegion?.id ||
+              0
+            ) === regionNum
+        );
+        sourceData = matches;
+      } else {
+        sourceData = data;
       }
     }
 
     return [
       { value: "", label: "-- SELECT CAMPUS --" },
-      ...filteredData.map((item) => ({
+      ...sourceData.map((item: any) => ({
         value: item.id,
-        label: `${item.name} (${item.cityName || item.city || ''})`,
+        label: `${item.name}${item.cityName || item.city ? ` (${item.cityName || item.city})` : ''}`,
       })),
     ];
   }, [localCampuses, data, effectiveRegionId]);

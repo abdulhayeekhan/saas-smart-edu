@@ -61,9 +61,15 @@ axios.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
-    // We also should prevent infinite loop on /api/account/refreshtoken endpoint itself
-    if (originalRequest?.url === authConfig.meEndpoint) {
-        return Promise.reject(error);
+    // Prevent infinite loop or hanging promise on auth endpoints (login, refreshtoken)
+    const isAuthEndpoint = 
+      originalRequest?.url === authConfig.meEndpoint || 
+      originalRequest?.url === authConfig.loginEndpoint ||
+      originalRequest?.url?.includes('/api/account/login') ||
+      originalRequest?.url?.includes('/api/account/refreshtoken');
+
+    if (isAuthEndpoint) {
+      return Promise.reject(error);
     }
 
     // Intercept 404 responses to return an empty array response instead of rejecting with "Request failed with status code 404"

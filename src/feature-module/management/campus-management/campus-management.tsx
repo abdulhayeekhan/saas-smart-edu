@@ -62,14 +62,15 @@ const CampusList = () => {
   const dispatch = useDispatch<AppDispatch>();
   const campusListInfonew = useSelector((state: RootState) => state.campus);
 
+  const loginInfo = JSON.parse(localStorage.getItem("loginInfo") || "{}");
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+
+  const userLevel = Number(loginInfo?.userLevel || userData?.data?.userLevel || 0);
+  const userLevelId = Number(loginInfo?.userLevelId || userData?.data?.userLevelId || 0);
+
   const GetCampuses = React.useCallback(async () => {
     setLoading(true);
     try {
-      const userInfoString = localStorage.getItem("userData");
-      const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
-      const userLevel = userInfo?.data?.userLevel;
-      const userLevelId = userInfo?.data?.userLevelId;
-
       const effectiveRegionId = userLevel === 2 ? userLevelId : regionId;
 
       const body = {
@@ -105,7 +106,7 @@ const CampusList = () => {
     } finally {
       setLoading(false);
     }
-  }, [dispatch, pageNo, pageSize, campusName, regionId]);
+  }, [dispatch, pageNo, pageSize, campusName, regionId, userLevel, userLevelId]);
 
   useEffect(() => {
     GetCampuses();
@@ -316,19 +317,21 @@ const CampusList = () => {
                       </div>
                       <div className="p-3 border-bottom">
                         <div className="row">
-                          <div className="col-md-6">
-                            <div className="mb-3">
-                              <label className="form-label">Region</label>
-                              <CommonSelect2
-                                className="select"
-                                options={regionsList}
-                                onChange={(selected) =>
-                                  handleRegionId(selected?.value || null)
-                                }
-                                defaultValue={regionsList[0]}
-                              />
+                          {userLevel !== 2 && (
+                            <div className="col-md-6">
+                              <div className="mb-3">
+                                <label className="form-label">Region</label>
+                                <CommonSelect2
+                                  className="select"
+                                  options={regionsList}
+                                  onChange={(selected) =>
+                                    handleRegionId(selected?.value || null)
+                                  }
+                                  defaultValue={regionsList[0]}
+                                />
+                              </div>
                             </div>
-                          </div>
+                          )}
                           <div className="col-md-6">
                             <div className="mb-3">
                               <label className="form-label">City</label>

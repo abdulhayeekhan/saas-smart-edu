@@ -44,10 +44,12 @@ const CampusModal: React.FC<CampusModalProps> = ({ selectedId, onSuccess }) => {
   const citiesList: OptionType[] = useCitiesList();
   const dispatch = useDispatch<AppDispatch>();
 
-  const userInfoString = localStorage.getItem("userData");
-  const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
-  const userLevel = userInfo?.data?.userLevel;
-  const userLevelId = userInfo?.data?.userLevelId;
+  const loginInfo = JSON.parse(localStorage.getItem("loginInfo") || "{}");
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+
+  const userLevel = Number(loginInfo?.userLevel || userData?.data?.userLevel || 0);
+  const userLevelId = Number(loginInfo?.userLevelId || userData?.data?.userLevelId || 0);
+  const userId = Number(loginInfo?.userId || userData?.data?.id || 0);
 
   const [campusInfo, setCampusInfo] = useState<CampusInput>({
     name: "",
@@ -173,7 +175,7 @@ const CampusModal: React.FC<CampusModalProps> = ({ selectedId, onSuccess }) => {
         contactNumber: campusInfo.contactNumber || "",
         email: campusInfo.email || "",
         regionId: userLevel === 2 && userLevelId ? Number(userLevelId) : Number(campusInfo.regionId) || 0,
-        addedBy: Number(userInfo?.data?.id || 0),
+        addedBy: Number(userId || 0),
         addedAt: new Date().toISOString(),
         isEnabled: Boolean(campusInfo.isEnabled),
         isDeleted: false,
@@ -195,7 +197,7 @@ const CampusModal: React.FC<CampusModalProps> = ({ selectedId, onSuccess }) => {
         contactNumber: "",
         email: "",
         regionId: userLevel === 2 && userLevelId ? Number(userLevelId) : 0,
-        addedBy: Number(userInfo?.data?.id || 0),
+        addedBy: Number(userId || 0),
         addedAt: new Date().toISOString(),
         isEnabled: true,
         isDeleted: false,
@@ -225,7 +227,7 @@ const CampusModal: React.FC<CampusModalProps> = ({ selectedId, onSuccess }) => {
         contactNumber: campusEdit.contactNumber || "",
         email: campusEdit.email || "",
         regionId: userLevel === 2 && userLevelId ? Number(userLevelId) : Number(campusEdit.regionId) || 0,
-        addedBy: Number(userInfo?.data?.id || campusEdit.addedBy || 0),
+        addedBy: Number(userId || campusEdit.addedBy || 0),
         addedAt: campusEdit.addedAt || new Date().toISOString(),
         isEnabled: Boolean(campusEdit.isEnabled),
         isDeleted: false,

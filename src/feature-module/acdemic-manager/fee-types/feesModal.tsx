@@ -32,6 +32,7 @@ const FeesModal = ({ editData, setEditData, deleteId, setDeleteId }: any) => {
     name: '',
     description: ''
   })
+  console.log('form data:', form)
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -52,7 +53,6 @@ const FeesModal = ({ editData, setEditData, deleteId, setDeleteId }: any) => {
     e.preventDefault();
     setSaveLoading(true);
     if (!form.name.trim()) return
-
     try {
       await dispatch(AddFeeTypeWithCOA(form) as any)
     } catch (error) {

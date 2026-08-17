@@ -197,7 +197,7 @@ export const AddFeeTypeWithCOA = createAsyncThunk<
           `${baseURL}/api/BChartOfAccount/GenerateAccountCode`,
           { params: { parentAccountId } }
         );
-
+        console.log('parentAccountId:', parentAccountId)
         const body: ChartOfAccountPayload = {
           parentAccountId,
           accountTypeId,
@@ -208,6 +208,7 @@ export const AddFeeTypeWithCOA = createAsyncThunk<
           mapping,
           isActive: true,
         };
+        console.log('req body:', body)
 
         return dispatch(AddCampusChartofAccount(body)).unwrap();
       };
@@ -217,11 +218,11 @@ export const AddFeeTypeWithCOA = createAsyncThunk<
        ---------------------------- */
       const [
         receivableCOA,
-        unearnedCOA,
+        ,
         incomeCOA
       ] = await Promise.all([
         createCOA(8, 7, `${payload.name} Receivable`, "Asset", "B-1"),
-        createCOA(11, 10, `${payload.name} Unearned`, "Liability", "B-3"),
+        createCOA(10, 9, `${payload.name} Unearned`, "Liability", "B-3"),
         createCOA(13, 12, `${payload.name}`, "Revenue", "B-6"),
       ]);
 

@@ -90,13 +90,17 @@ const Manageusers = () => {
     isEnabled: true
   })
 
+  const [selectedRegionId, setSelectedRegionId] = useState<number>(0);
+
   const rolesList = useRolesList(usersInfo?.userLevel)
-  const campusesList = useCampusesList(currentUserLevel === 2 ? currentUserLevelId : undefined);
+  const effectiveAddRegionId = currentUserLevel === 2 ? currentUserLevelId : selectedRegionId;
+  const campusesList = useCampusesList(effectiveAddRegionId);
   const regionsList = useRegionsList();
 
 
   const handleUserLevel = async (value: string | number) => {
     const userLevel = Number(value);
+    setSelectedRegionId(0);
     setUsersInfo((prev) => ({
       ...prev,
       userLevel: userLevel,
@@ -587,17 +591,36 @@ const Manageusers = () => {
                       </div>
                     )}
                     {usersInfo?.userLevel === 3 && (
-                      <div className="col-md-12">
-                        <div className="mb-2">
-                          <label className="form-label">Campus <span className="text-danger">*</span></label>
-                          <CommonSelect3
-                            className="select"
-                            options={campusesList}
-                            onChange={(option) => handleUserLevelId(Number(option?.value || 0))}
-                            value={usersInfo?.userLevelId ? campusesList.find(campus => Number(campus.value) === Number(usersInfo.userLevelId)) || null : null}
-                          />
+                      <>
+                        {currentUserLevel !== 2 && (
+                          <div className="col-md-12">
+                            <div className="mb-2">
+                              <label className="form-label">Region <span className="text-danger">*</span></label>
+                              <CommonSelect3
+                                className="select"
+                                options={regionsList}
+                                onChange={(option) => {
+                                  const rId = Number(option?.value || 0);
+                                  setSelectedRegionId(rId);
+                                  setUsersInfo((prev) => ({ ...prev, userLevelId: 0 }));
+                                }}
+                                value={selectedRegionId ? regionsList.find(region => region.value === selectedRegionId) || null : null}
+                              />
+                            </div>
+                          </div>
+                        )}
+                        <div className="col-md-12">
+                          <div className="mb-2">
+                            <label className="form-label">Campus <span className="text-danger">*</span></label>
+                            <CommonSelect3
+                              className="select"
+                              options={campusesList}
+                              onChange={(option) => handleUserLevelId(Number(option?.value || 0))}
+                              value={usersInfo?.userLevelId ? campusesList.find(campus => Number(campus.value) === Number(usersInfo.userLevelId)) || null : null}
+                            />
+                          </div>
                         </div>
-                      </div>
+                      </>
                     )}
 
 
@@ -742,17 +765,36 @@ const Manageusers = () => {
                       </div>
                     )}
                     {usersInfo?.userLevel === 3 && (
-                      <div className="col-md-12">
-                        <div className="mb-2">
-                          <label className="form-label">Campus <span className="text-danger">*</span></label>
-                          <CommonSelect3
-                            className="select"
-                            options={campusesList}
-                            onChange={(option) => handleUserLevelId(Number(option?.value || 0))}
-                            value={usersInfo?.userLevelId ? campusesList.find(campus => Number(campus.value) === Number(usersInfo.userLevelId)) || null : null}
-                          />
+                      <>
+                        {currentUserLevel !== 2 && (
+                          <div className="col-md-12">
+                            <div className="mb-2">
+                              <label className="form-label">Region <span className="text-danger">*</span></label>
+                              <CommonSelect3
+                                className="select"
+                                options={regionsList}
+                                onChange={(option) => {
+                                  const rId = Number(option?.value || 0);
+                                  setSelectedRegionId(rId);
+                                  setUsersInfo((prev) => ({ ...prev, userLevelId: 0 }));
+                                }}
+                                value={selectedRegionId ? regionsList.find(region => region.value === selectedRegionId) || null : null}
+                              />
+                            </div>
+                          </div>
+                        )}
+                        <div className="col-md-12">
+                          <div className="mb-2">
+                            <label className="form-label">Campus <span className="text-danger">*</span></label>
+                            <CommonSelect3
+                              className="select"
+                              options={campusesList}
+                              onChange={(option) => handleUserLevelId(Number(option?.value || 0))}
+                              value={usersInfo?.userLevelId ? campusesList.find(campus => Number(campus.value) === Number(usersInfo.userLevelId)) || null : null}
+                            />
+                          </div>
                         </div>
-                      </div>
+                      </>
                     )}
 
 

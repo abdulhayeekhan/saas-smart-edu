@@ -25,15 +25,42 @@ const ClassGrade = () => {
   const hasPermission = usePermission("Grades");
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const { data, loading } = useSelector((state: RootState) => state.grades);
+
+  const getNextSortOrder = (): number => {
+    if (!data || data.length === 0) return 1;
+    const orders = data.map((item: any) => Number(item.sortOrder) || 0);
+    const maxOrder = Math.max(...orders, 0);
+    return maxOrder + 1;
+  };
+
   const [gradeAdd, setGradeAdd] = useState<Grade>({
     name: '',
-    sortOrder: 0
-  })
+    sortOrder: 1
+  });
+
+  useEffect(() => {
+    if (data) {
+      const nextOrder = getNextSortOrder();
+      setGradeAdd(prev => ({
+        ...prev,
+        sortOrder: prev.name === '' ? nextOrder : (prev.sortOrder || nextOrder)
+      }));
+    }
+  }, [data]);
+
+  const handleOpenAddModal = () => {
+    const nextOrder = getNextSortOrder();
+    setGradeAdd({
+      name: '',
+      sortOrder: nextOrder
+    });
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setGradeAdd(prev => ({
       ...prev,
-      [name]: name === "sortOrder" ? Number(value) : value
+      [name]: name === "sortOrder" ? (value === "" ? "" as any : Number(value)) : value
     }));
   };
   const [isSave, setIsSave] = useState(false)
@@ -48,7 +75,7 @@ const ClassGrade = () => {
       return;
     }
 
-    if (!gradeAdd.sortOrder || gradeAdd.sortOrder <= 0) {
+    if (!gradeAdd.sortOrder || Number(gradeAdd.sortOrder) <= 0) {
       toast.error("Sort order must be greater than 0");
       setIsSave(false);
       return;
@@ -68,7 +95,7 @@ const ClassGrade = () => {
         // Reset input
         setGradeAdd({
           name: "",
-          sortOrder: 0,
+          sortOrder: getNextSortOrder(),
         });
 
         // Close modal AFTER success
@@ -108,7 +135,7 @@ const ClassGrade = () => {
   };
   const handleClose = () => {
     setEditGrade({ id: 0, name: "", sortOrder: 0 });
-    setGradeAdd({ name: '', sortOrder: 0 })
+    setGradeAdd({ name: '', sortOrder: getNextSortOrder() });
   }
   const [isUpdating, setIsUpdating] = useState(false)
   const handleUpdate = (e: React.FormEvent) => {
@@ -305,6 +332,7 @@ const ClassGrade = () => {
                       className="btn btn-primary"
                       data-bs-toggle="modal"
                       data-bs-target="#add_class_section"
+                      onClick={handleOpenAddModal}
                     >
                       <i className="ti ti-square-rounded-plus-filled me-2" />
                       Add Grade

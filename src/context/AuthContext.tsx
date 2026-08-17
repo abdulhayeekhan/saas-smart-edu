@@ -232,7 +232,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       toast.success('Signed in successfully');
       navigate(from, { replace: true });
     } catch (err: any) {
-      const errMsg = err?.response?.data?.message || err?.message || 'Username or password is incorrect';
+      const errMsg = err?.response?.data?.message || err?.response?.data?.Message || err?.response?.data?.title || err?.message || 'Username or password is incorrect';
       toast.error(errMsg);
       if (errorCallback) errorCallback(err);
     }

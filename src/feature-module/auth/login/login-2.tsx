@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { all_routes } from "../../router/all_routes";
 import ImageWithBasePath from "../../../core/common/imageWithBasePath";
-import { Companylogo, CoverPhoto } from '../../../environment';
+import { Companylogo } from '../../../environment';
 import CopyrightFooter from "../../../core/common/footer/CopyrightFooter";
 import useAuth from "../../../hooks/useAuth";
 import { LoginParams } from "../../../context/AuthContext";
@@ -11,7 +11,6 @@ type PasswordField = "password";
 
 const Login2 = () => {
   const routes = all_routes;
-  const navigation = useNavigate();
 
   const [passwordVisibility, setPasswordVisibility] = useState({
     password: false,
@@ -51,11 +50,11 @@ const Login2 = () => {
 
     try {
       await auth.login({ username, password, rememberMe }, (err: any) => {
-        const msg = err?.response?.data?.message || err?.message || "Username or password is incorrect";
+        const msg = err?.response?.data?.message || err?.response?.data?.Message || err?.response?.data?.title || err?.message || "Username or password is incorrect";
         setErrorMessage(msg);
       });
     } catch (error: any) {
-      const msg = error?.response?.data?.message || error?.message || "Username or password is incorrect";
+      const msg = error?.response?.data?.message || error?.response?.data?.Message || error?.response?.data?.title || error?.message || "Username or password is incorrect";
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
@@ -162,7 +161,10 @@ const Login2 = () => {
                       type="checkbox"
                       id="rememberMeCheck"
                       checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
+                      onChange={(e) => {
+                        setRememberMe(e.target.checked);
+                        setData((prev) => ({ ...prev, rememberMe: e.target.checked }));
+                      }}
                     />
                     <label className="form-check-label ms-2 fs-13 text-secondary cursor-pointer" htmlFor="rememberMeCheck">
                       Remember Me
@@ -183,7 +185,7 @@ const Login2 = () => {
                   <button
                     type="submit"
                     className="btn btn-primary w-100 py-2 fs-15 fw-semibold shadow-sm"
-                    disabled={isLoading || !rememberMe}
+                    disabled={isLoading}
                   >
                     {isLoading ? "Signing In..." : "Sign In"}
                   </button>

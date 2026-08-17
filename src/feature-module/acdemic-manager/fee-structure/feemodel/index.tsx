@@ -17,6 +17,7 @@ import { useFeeTypes } from '../../../../core/common/selectoption/academic/useFe
 import useRegionsList from "../../../../core/common/selectoption/master/useRegions";
 import { useCampusesList } from "../../../../core/common/selectoption/master/useCampusesList";
 import { FeeStructureType, FeeDetailType, GetFeeById, AddFeeStructure, UpdateFeeStructure } from "../../../../store/apps/fee-structure";
+import { GetCampusByID } from "../../../../store/apps/campus-management";
 import toast from 'react-hot-toast'
 
 
@@ -28,12 +29,37 @@ const FeeStructureModel: React.FC<FeesModalProps> = ({ isEditData }) => {
   const [activeContent, setActiveContent] = useState('');
   const regionsList = useRegionsList();
   const { single: feeDetails, data: allFeeStructures } = useSelector((state: RootState) => state.feeStructure);
+  const dispatch = useDispatch<AppDispatch>();
 
-  const userInfoString = localStorage.getItem("userData");
-  const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
-  const loginInfo = userInfo?.data
-  const createdBy = loginInfo?.id
-  const [regionId, setRegionId] = useState(loginInfo?.userLevel === 2 ? loginInfo?.userLevelId : null);
+  const loginInfoObj = JSON.parse(localStorage.getItem("loginInfo") || "{}");
+  const userDataObj = JSON.parse(localStorage.getItem("userData") || "{}");
+
+  const userLevel = Number(loginInfoObj?.userLevel || userDataObj?.data?.userLevel || 0);
+  const userLevelId = Number(loginInfoObj?.userLevelId || userDataObj?.data?.userLevelId || 0);
+  const loginInfo = userDataObj?.data || loginInfoObj;
+  const createdBy = loginInfo?.id;
+
+  const [campusRegionId, setCampusRegionId] = useState<number>(
+    Number(
+      loginInfoObj?.regionId ||
+      userDataObj?.data?.regionId ||
+      userDataObj?.data?.tblCampus?.regionId ||
+      userDataObj?.data?.campus?.regionId ||
+      0
+    )
+  );
+
+  useEffect(() => {
+    if (userLevel === 3 && userLevelId) {
+      dispatch(GetCampusByID(userLevelId)).then((res: any) => {
+        if (res.payload && res.payload.regionId) {
+          setCampusRegionId(Number(res.payload.regionId));
+        }
+      });
+    }
+  }, [userLevel, userLevelId, dispatch]);
+
+  const [regionId, setRegionId] = useState<number>(userLevel === 2 ? userLevelId : (userLevel === 3 ? campusRegionId : 0));
   const [deleteId, setDeleteId] = useState<number | string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -79,12 +105,19 @@ const FeeStructureModel: React.FC<FeesModalProps> = ({ isEditData }) => {
     }
   };
   const handleSelectRegion = (name: string, option: any) => {
-    setRegionId(option?.value ?? 0);
-  }
-  const effectiveRegionId = loginInfo?.userLevel === 2 ? loginInfo?.userLevelId : (regionId || loginInfo?.regionId);
+    const selectedRId = Number(option?.value ?? 0);
+    setRegionId(selectedRId);
+    setFormData(prev => ({
+      ...prev,
+      campusId: 0,
+      sessionId: 0,
+      gradeId: 0
+    }));
+  };
+
+  const effectiveRegionId = userLevel === 2 ? userLevelId : (userLevel === 3 ? (campusRegionId || regionId) : regionId);
   const campuses = useCampusesList(effectiveRegionId);
 
-  const dispatch = useDispatch<AppDispatch>();
   const grades = useAcademicGrades(effectiveRegionId);
   const sessions = useAcademicSessions(effectiveRegionId);
   const { lastSessionId } = useLastAcademicSession();
@@ -96,7 +129,7 @@ const FeeStructureModel: React.FC<FeesModalProps> = ({ isEditData }) => {
   };
 
   const [formData, setFormData] = useState<FeeStructureType>({
-    campusId: loginInfo?.userLevel === 3 ? loginInfo?.userLevelId : 0,
+    campusId: userLevel === 3 ? userLevelId : 0,
     sessionId: 0,
     gradeId: 0,
     details: [{
@@ -583,7 +616,7 @@ const FeeStructureModel: React.FC<FeesModalProps> = ({ isEditData }) => {
               <form onSubmit={handleEditSave}>
                 <div className="modal-body">
                   <div className="row">
-                    {loginInfo?.userLevel === 1 && (
+                    {userLevel === 1 && (
                       <div className="col-md-6">
                         <div className="mb-3">
                           <label className="form-label">Region</label>
@@ -591,12 +624,12 @@ const FeeStructureModel: React.FC<FeesModalProps> = ({ isEditData }) => {
                             className="select"
                             options={regionsList}
                             onChange={(option) => handleSelectRegion('regions', option)}
-                            value={regionId ? regionsList.find(r => r.value === regionId) : regionsList[0]}
+                            value={regionId ? regionsList.find(r => Number(r.value) === Number(regionId)) : regionsList[0]}
                           />
                         </div>
                       </div>
                     )}
-                    {(loginInfo?.userLevel === 1 || loginInfo?.userLevel === 2) && (
+                    {(userLevel === 1 || userLevel === 2) && (
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
                           <label className="form-label">Campus</label>
@@ -604,7 +637,7 @@ const FeeStructureModel: React.FC<FeesModalProps> = ({ isEditData }) => {
                             className="select"
                             options={campuses}
                             onChange={(opt: any) => handleEditTopLevelSelect('campusId', opt)}
-                            value={updateData?.campusId ? campuses.find(c => c.value === updateData.campusId) : campuses[0]}
+                            value={updateData?.campusId ? campuses.find(c => Number(c.value) === Number(updateData.campusId)) : campuses[0]}
                           />
                         </div>
                       </div>
@@ -776,7 +809,7 @@ const FeeStructureModel: React.FC<FeesModalProps> = ({ isEditData }) => {
               <form onSubmit={handleSave}>
                 <div className="modal-body">
                   <div className="row">
-                    {loginInfo?.userLevel === 1 && (
+                    {userLevel === 1 && (
                       <div className="col-md-6">
                         <div className="mb-3">
                           <label className="form-label">Region</label>
@@ -784,12 +817,12 @@ const FeeStructureModel: React.FC<FeesModalProps> = ({ isEditData }) => {
                             className="select"
                             options={regionsList}
                             onChange={(option) => handleSelectRegion('regions', option)}
-                            value={regionId ? regionsList.find(r => r.value === regionId) : regionsList[0]}
+                            value={regionId ? regionsList.find(r => Number(r.value) === Number(regionId)) : regionsList[0]}
                           />
                         </div>
                       </div>
                     )}
-                    {(loginInfo?.userLevel === 1 || loginInfo?.userLevel === 2) && (
+                    {(userLevel === 1 || userLevel === 2) && (
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
                           <label className="form-label">Campus</label>
@@ -797,7 +830,7 @@ const FeeStructureModel: React.FC<FeesModalProps> = ({ isEditData }) => {
                             className="select"
                             options={campuses}
                             onChange={(opt: any) => handleTopLevelSelect('campusId', opt)}
-                            value={formData?.campusId ? campuses.find(c => c.value === formData.campusId) : campuses[0]}
+                            value={formData?.campusId ? campuses.find(c => Number(c.value) === Number(formData.campusId)) : campuses[0]}
                           />
                         </div>
                       </div>

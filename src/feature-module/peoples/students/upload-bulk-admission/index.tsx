@@ -59,26 +59,67 @@ export interface GradeFeeStructureVerifyType {
 
 const BulkImportStudents = () => {
     const routes = all_routes;
+    const [isDragging, setIsDragging] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [selectedRecord, setSelectedRecord] = useState<any>(null);
     const dispatch = useDispatch<AppDispatch>();
     const { lastSessionId } = useLastAcademicSession();
-    const userInfoString = localStorage.getItem("userData");
-    const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
-    const loginInfo = userInfo?.data
-    const userId = loginInfo?.id
+
+    const loginInfoObj = JSON.parse(localStorage.getItem("loginInfo") || "{}");
+    const userDataObj = JSON.parse(localStorage.getItem("userData") || "{}");
+
+    const userLevel = Number(loginInfoObj?.userLevel || userDataObj?.data?.userLevel || 0);
+    const userLevelId = Number(loginInfoObj?.userLevelId || userDataObj?.data?.userLevelId || 0);
+    const loginInfo = userDataObj?.data || loginInfoObj;
+    const userId = loginInfo?.id;
+
     const regionsList = useRegionsList();
     const [feeStructureVerify, setFeeStructureVerify] = useState<GradeFeeStructureVerifyType[]>([]);
-    const [regionId, setRegionId] = useState(loginInfo?.userLevel === 2 ? loginInfo?.userLevelId : null)
+    const [regionId, setRegionId] = useState<number>(userLevel === 2 ? userLevelId : 0);
+
     const handleSelectRegion = (name: string, option: any) => {
-        setRegionId(option?.value ?? 0);
-    }
-    const campuses = useCampusesList(loginInfo?.userLevel === 2 ? loginInfo?.userLevelId : regionId);
-    const [campusId, setCampusId] = useState<number>(loginInfo?.userLevel === 3 ? loginInfo?.userLevelId : 0);
+        const rId = Number(option?.value ?? 0);
+        setRegionId(rId);
+        setCampusId(0);
+    };
+
+    const effectiveRegionId = userLevel === 2 ? userLevelId : regionId;
+    const campuses = useCampusesList(effectiveRegionId);
+    const regionGradesOptions = useAcademicGrades(effectiveRegionId);
+
+    const rawGrades = regionGradesOptions.filter(
+        (g: any) => g.value !== 0 && g.value !== "" && g.label !== "SELECT GRADE"
+    );
+    const availableGradeNames = rawGrades.map((g: any) => g.label);
+
+    const earlyKeywords = ["pg", "nursery", "nursary", "prep", "playgroup", "kg", "kindergarten"];
+    const primaryKeywords = ["one", "two", "three", "four", "five", "six", "seven", "eight", "primary", "1", "2", "3", "4", "5", "6", "7", "8"];
+    const highKeywords = ["9th", "10th", "11th", "12th", "pre-9th", "matric", "inter", "college", "high", "9", "10"];
+    const religiousKeywords = ["hifz", "quran", "tajweed", "nazra", "religious"];
+
+    const earlyGradesList = availableGradeNames.filter((name: string) =>
+        earlyKeywords.some(k => name.toLowerCase().includes(k))
+    );
+    const primaryGradesList = availableGradeNames.filter((name: string) =>
+        !earlyGradesList.includes(name) && primaryKeywords.some(k => name.toLowerCase().includes(k))
+    );
+    const highGradesList = availableGradeNames.filter((name: string) =>
+        !earlyGradesList.includes(name) && !primaryGradesList.includes(name) && highKeywords.some(k => name.toLowerCase().includes(k))
+    );
+    const religiousGradesList = availableGradeNames.filter((name: string) =>
+        religiousKeywords.some(k => name.toLowerCase().includes(k))
+    );
+    const otherGradesList = availableGradeNames.filter((name: string) =>
+        !earlyGradesList.includes(name) &&
+        !primaryGradesList.includes(name) &&
+        !highGradesList.includes(name) &&
+        !religiousGradesList.includes(name)
+    );
+    const [campusId, setCampusId] = useState<number>(userLevel === 3 ? userLevelId : 0);
     const handleSelectCampus = (name: string, option: any) => {
-        setCampusId(option?.value ?? 0);
-    }
-    
+        setCampusId(Number(option?.value ?? 0));
+    };
+
     const [allowBulkImport, setAllowBulkImport] = useState<boolean>(true);
     useEffect(() => {
         if (campusId && campusId !== 0) {
@@ -108,21 +149,49 @@ const BulkImportStudents = () => {
         document.body.removeChild(link);
     };
 
+    const processFile = (selectedFile: File) => {
+        const validTypes = [
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-excel"
+        ];
+        const isExcel = validTypes.includes(selectedFile.type) ||
+                        selectedFile.name.endsWith('.xlsx') ||
+                        selectedFile.name.endsWith('.xls');
+
+        if (isExcel) {
+            setFile(selectedFile);
+            setImportErrors([]);
+        } else {
+            alert("Please upload a valid Excel file (.xlsx or .xls)");
+        }
+    };
+
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            const selectedFile = e.target.files[0];
+            processFile(e.target.files[0]);
+        }
+    };
 
-            const validTypes = [
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "application/vnd.ms-excel"
-            ];
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
 
-            if (validTypes.includes(selectedFile.type)) {
-                setFile(selectedFile);
-            } else {
-                alert("Please upload a valid Excel file (.xlsx or .xls)");
-                e.target.value = '';
-            }
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            processFile(e.dataTransfer.files[0]);
+            e.dataTransfer.clearData();
         }
     };
 
@@ -236,7 +305,7 @@ const BulkImportStudents = () => {
                                 <div className="card-body pb-1">
 
                                     <div className="row">
-                                        {loginInfo?.userLevel === 1 && (
+                                        {userLevel === 1 && (
                                             <div className="col-md-6 mb-3">
                                                 <div className="mb-3">
                                                     <label className="form-label">Region</label>
@@ -244,12 +313,12 @@ const BulkImportStudents = () => {
                                                         className="select"
                                                         options={regionsList}
                                                         onChange={(option) => handleSelectRegion('regions', option)}
-                                                        value={regionId ? regionsList.find(r => r.value === regionId) : regionsList[0]}
+                                                        value={regionId ? regionsList.find(r => Number(r.value) === Number(regionId)) : regionsList[0]}
                                                     />
                                                 </div>
                                             </div>
                                         )}
-                                        {(loginInfo?.userLevel === 1 || loginInfo?.userLevel === 2) && (
+                                        {(userLevel === 1 || userLevel === 2) && (
                                             <div className="col-md-6 mb-3">
                                                 <div className="mb-3">
                                                     <label className="form-label">Campus</label>
@@ -259,7 +328,7 @@ const BulkImportStudents = () => {
                                                         onChange={(option) =>
                                                             handleSelectCampus('campusId', option)
                                                         }
-                                                        value={campusId ? campuses.find(c => c.value === campusId) : campuses[0]}
+                                                        value={campusId ? campuses.find(c => Number(c.value) === Number(campusId)) : campuses[0]}
                                                     />
                                                 </div>
                                             </div>
@@ -326,19 +395,57 @@ const BulkImportStudents = () => {
                                                             </tr>
                                                             <tr>
                                                                 <td className="fw-bold">Grades (Early)</td>
-                                                                <td>PG, Nursary, Prep</td>
+                                                                <td>
+                                                                    {earlyGradesList.length > 0
+                                                                        ? earlyGradesList.join(", ")
+                                                                        : (availableGradeNames.length > 0 ? "None in this region" : "PG, Nursary, Prep")}
+                                                                </td>
                                                             </tr>
                                                             <tr>
                                                                 <td className="fw-bold">Grades (Primary)</td>
-                                                                <td>One, Two, Three, Four, Five, Six, Seven and Eight</td>
+                                                                <td>
+                                                                    {primaryGradesList.length > 0
+                                                                        ? primaryGradesList.join(", ")
+                                                                        : (availableGradeNames.length > 0 ? "None in this region" : "One, Two, Three, Four, Five, Six, Seven, Eight")}
+                                                                </td>
                                                             </tr>
                                                             <tr>
                                                                 <td className="fw-bold">High/College</td>
-                                                                <td>Pre-9th, Grade 9th, Grade 10th, 1st Year, 2nd Year</td>
+                                                                <td>
+                                                                    {highGradesList.length > 0
+                                                                        ? highGradesList.join(", ")
+                                                                        : (availableGradeNames.length > 0 ? "None in this region" : "Pre-9th, Grade 9th, Grade 10th, 1st Year, 2nd Year")}
+                                                                </td>
                                                             </tr>
                                                             <tr>
                                                                 <td className="fw-bold">Religious</td>
-                                                                <td>Hifz-e-Quran (Boys), Hifz-e-Quran (Girls)</td>
+                                                                <td>
+                                                                    {religiousGradesList.length > 0
+                                                                        ? religiousGradesList.join(", ")
+                                                                        : (availableGradeNames.length > 0 ? "None in this region" : "Hifz-e-Quran (Boys), Hifz-e-Quran (Girls)")}
+                                                                </td>
+                                                            </tr>
+                                                            {otherGradesList.length > 0 && (
+                                                                <tr>
+                                                                    <td className="fw-bold">Other Region Grades</td>
+                                                                    <td>{otherGradesList.join(", ")}</td>
+                                                                </tr>
+                                                            )}
+                                                            <tr>
+                                                                <td className="fw-bold text-primary">All Active Region Grades</td>
+                                                                <td>
+                                                                    {availableGradeNames.length > 0 ? (
+                                                                        <div className="d-flex flex-wrap gap-1">
+                                                                            {availableGradeNames.map((gName: string, idx: number) => (
+                                                                                <span key={idx} className="badge bg-primary-light text-primary fs-11">
+                                                                                    {gName}
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="text-muted">Loading region grades...</span>
+                                                                    )}
+                                                                </td>
                                                             </tr>
                                                             <tr>
                                                                 <td colSpan={2}>
@@ -394,44 +501,65 @@ const BulkImportStudents = () => {
                                             </div>
                                         )}
 
-                                        <div className="col-md-12">
-                                            <div className="d-flex align-items-center flex-wrap row-gap-3 mb-3">
-                                                {/* Visual File Icon / Preview */}
-                                                <div className={`d-flex align-items-center justify-content-center avatar avatar-xxl border border-dashed me-2 flex-shrink-0 frames ${file ? 'border-success text-success' : 'text-dark'}`}>
-                                                    {file ? <i className="ti ti-file-spreadsheet fs-30" /> : <i className="ti ti-photo-plus fs-16" />}
-                                                </div>
+                                         <div className="col-md-12 mb-4">
+                                             <div
+                                                 className={`border-2 border-dashed rounded-3 p-4 text-center position-relative transition-all ${
+                                                     isDragging
+                                                         ? 'border-primary bg-soft-primary'
+                                                         : file
+                                                         ? 'border-success bg-soft-success'
+                                                         : 'border-secondary-subtle bg-light'
+                                                 }`}
+                                                 onDragOver={handleDragOver}
+                                                 onDragLeave={handleDragLeave}
+                                                 onDrop={handleDrop}
+                                                 style={{ cursor: 'pointer', transition: 'all 0.2s ease-in-out' }}
+                                             >
+                                                 <input
+                                                     type="file"
+                                                     className="position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer"
+                                                     accept=".xlsx, .xls"
+                                                     onChange={handleFileChange}
+                                                     style={{ cursor: 'pointer', zIndex: 5 }}
+                                                 />
 
-                                                <div className="profile-upload">
-                                                    <div className="profile-uploader d-flex align-items-center">
-                                                        <div className="drag-upload-btn mb-3">
-                                                            {file ? "Change File" : "Upload"}
-                                                            <input
-                                                                type="file"
-                                                                className="form-control image-sign"
-                                                                accept=".xlsx, .xls"
-                                                                onChange={handleFileChange}
-                                                            />
-                                                        </div>
-                                                        {file && (
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-danger mb-3 ms-2"
-                                                                onClick={() => setFile(null)}
-                                                            >
-                                                                Remove
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                    <p className="fs-12">
-                                                        {file ? (
-                                                            <strong className="text-primary">Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)</strong>
-                                                        ) : (
-                                                            "Max file size: 10MB. Allowed file types: .xlsx, .xls"
-                                                        )}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                                 {file ? (
+                                                     <div className="d-flex align-items-center justify-content-between p-2" style={{ zIndex: 10, position: 'relative' }}>
+                                                         <div className="d-flex align-items-center">
+                                                             <div className="avatar avatar-lg bg-success text-white rounded me-3 flex-shrink-0 d-flex align-items-center justify-content-center">
+                                                                 <i className="ti ti-file-spreadsheet fs-24" />
+                                                             </div>
+                                                             <div className="text-start">
+                                                                 <h6 className="mb-0 text-success fw-bold">{file.name}</h6>
+                                                                 <small className="text-muted">{(file.size / 1024).toFixed(1)} KB • Ready to upload</small>
+                                                             </div>
+                                                         </div>
+                                                         <button
+                                                             type="button"
+                                                             className="btn btn-sm btn-outline-danger"
+                                                             onClick={(e) => {
+                                                                 e.stopPropagation();
+                                                                 setFile(null);
+                                                             }}
+                                                             style={{ zIndex: 15 }}
+                                                         >
+                                                             <i className="ti ti-trash me-1" /> Remove
+                                                         </button>
+                                                     </div>
+                                                 ) : (
+                                                     <div className="py-3">
+                                                         <div className="avatar avatar-xl bg-soft-primary text-primary rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center">
+                                                             <i className="ti ti-cloud-upload fs-32" />
+                                                         </div>
+                                                         <h5 className="mb-1 text-dark">
+                                                             {isDragging ? "Drop your Excel file here" : "Drag & Drop your Excel file here"}
+                                                         </h5>
+                                                         <p className="text-muted fs-13 mb-2">or <span className="text-primary text-decoration-underline fw-medium">browse to choose a file</span></p>
+                                                         <span className="badge bg-light text-secondary border">Supported Formats: .xlsx, .xls (Max: 10MB)</span>
+                                                     </div>
+                                                 )}
+                                             </div>
+                                         </div>
                                             </>
                                         )}
                                     </div>
