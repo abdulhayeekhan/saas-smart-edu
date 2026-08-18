@@ -1,0 +1,44 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.85; }
+    }
+    .spinner-ring {
+      animation: spin 1.2s linear infinite;
+      transform-origin: 60px 60px;
+    }
+    .robot-center {
+      animation: pulse 1.5s ease-in-out infinite;
+      transform-origin: 60px 60px;
+    }
+  </style>
+
+  <!-- Outer Spinning Gradient Track -->
+  <circle class="spinner-ring" cx="60" cy="60" r="50" stroke="#7C3AED" stroke-width="5" stroke-linecap="round" stroke-dasharray="240 80" />
+
+  <!-- Robot Icon Center -->
+  <g class="robot-center">
+    <!-- Antenna -->
+    <circle cx="60" cy="30" r="4" fill="#7C3AED" />
+    <rect x="58.5" y="34" width="3" height="5" fill="#7C3AED" />
+    
+    <!-- Ears -->
+    <rect x="36" y="47" width="5" height="18" rx="2.5" fill="#7C3AED" />
+    <rect x="79" y="47" width="5" height="18" rx="2.5" fill="#7C3AED" />
+    
+    <!-- Head -->
+    <rect x="42" y="39" width="36" height="34" rx="11" fill="#7C3AED" />
+    
+    <!-- Eyes -->
+    <circle cx="53" cy="52" r="4.5" fill="white" />
+    <circle cx="67" cy="52" r="4.5" fill="white" />
+    
+    <!-- Smile -->
+    <path d="M 55 62 Q 60 67 65 62" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+  </g>
+</svg>
