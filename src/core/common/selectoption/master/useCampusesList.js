@@ -5,7 +5,7 @@ import axios from "axios";
 const baseURL = process.env.REACT_APP_API_BASE_URL;
 
 export const useCampusesList = (customRegionId) => {
-  const { data } = useSelector((state: any) => state.campus);
+  const { data } = useSelector((state) => state.campus);
   const [localCampuses, setLocalCampuses] = useState([]);
 
   const loginInfoString = localStorage.getItem('loginInfo');
@@ -64,7 +64,7 @@ export const useCampusesList = (customRegionId) => {
       if (effectiveRegionId) {
         const regionNum = Number(effectiveRegionId);
         const matches = data.filter(
-          (item: any) =>
+          (item) =>
             Number(
               item?.regionId ||
               item?.regionID ||
@@ -82,7 +82,7 @@ export const useCampusesList = (customRegionId) => {
 
     return [
       { value: "", label: "-- SELECT CAMPUS --" },
-      ...sourceData.map((item: any) => ({
+      ...sourceData.map((item) => ({
         value: item.id,
         label: `${item.name}${item.cityName || item.city ? ` (${item.cityName || item.city})` : ''}`,
       })),

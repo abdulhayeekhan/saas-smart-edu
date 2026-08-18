@@ -5,7 +5,7 @@ import { GetCampusByID } from '../../../../store/apps/campus-management';
 
 export const useAcademicSessions = (regionId) => {
   const dispatch = useDispatch();
-  const { data } = useSelector((state: any) => state.sessions);
+  const { data } = useSelector((state) => state.sessions);
 
   const loginInfo = JSON.parse(localStorage.getItem('loginInfo') || '{}');
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -32,7 +32,7 @@ export const useAcademicSessions = (regionId) => {
 
   useEffect(() => {
     if (userLevel === 3 && userLevelId && !activeRegionId) {
-      dispatch(GetCampusByID(userLevelId)).then((res: any) => {
+      dispatch(GetCampusByID(userLevelId)).then((res) => {
         if (res.payload && res.payload.regionId) {
           setCampusRegionId(Number(res.payload.regionId));
         }
@@ -62,11 +62,11 @@ export const useAcademicSessions = (regionId) => {
     }
 
     const formattedSessions = unique
-      .map((item: any) => ({
+      .map((item) => ({
         value: item.id,
         label: item.name,
       }))
-      .sort((a: any, b: any) => Number(b.value) - Number(a.value));
+      .sort((a, b) => Number(b.value) - Number(a.value));
 
     return [
       { value: "", label: "SELECT SESSION" },

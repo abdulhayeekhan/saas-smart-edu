@@ -57,7 +57,10 @@ const CampusList = () => {
   const [loading, setLoading] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const handleEdit = (id: number) => {
-    setSelectedId(id);
+    setSelectedId(null);
+    setTimeout(() => {
+      setSelectedId(id);
+    }, 0);
   };
   const dispatch = useDispatch<AppDispatch>();
   const campusListInfonew = useSelector((state: RootState) => state.campus);

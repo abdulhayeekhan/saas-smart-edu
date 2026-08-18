@@ -5,7 +5,7 @@ import { GetCampusByID } from '../../../../store/apps/campus-management';
 
 export const useAcademicGrades = (regionId) => {
   const dispatch = useDispatch();
-  const { data } = useSelector((state: any) => state.grades);
+  const { data } = useSelector((state) => state.grades);
 
   const loginInfo = JSON.parse(localStorage.getItem('loginInfo') || '{}');
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -32,7 +32,7 @@ export const useAcademicGrades = (regionId) => {
 
   useEffect(() => {
     if (userLevel === 3 && userLevelId && !activeRegionId) {
-      dispatch(GetCampusByID(userLevelId)).then((res: any) => {
+      dispatch(GetCampusByID(userLevelId)).then((res) => {
         if (res.payload && res.payload.regionId) {
           setCampusRegionId(Number(res.payload.regionId));
         }
@@ -61,7 +61,7 @@ export const useAcademicGrades = (regionId) => {
       }
     }
 
-    const filtermap = unique.map((item: any) => ({
+    const filtermap = unique.map((item) => ({
       value: item.id,
       label: item.name,
     }));

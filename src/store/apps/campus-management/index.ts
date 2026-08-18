@@ -59,9 +59,12 @@ export const GetAllCampus = createAsyncThunk<Campus[], any>(
 export const GetCampusByID = createAsyncThunk<Campus, number>(
   'campus/getById',
   async (id, { rejectWithValue }) => {
+    if (!id || Number(id) <= 0) {
+      return rejectWithValue('Invalid Campus ID')
+    }
     try {
       const { data } = await axios.get(`${baseURL}/api/campus/getcampusbyid?id=${id}`)
-      return data.data as Campus
+      return (data.data || data) as Campus
     } catch (error: any) {
       return rejectWithValue(error.message)
     }
@@ -74,9 +77,13 @@ export const AddCampus = createAsyncThunk<Campus, Partial<Campus>>(
     try {
       const response = await axios.post(`${baseURL}/api/campus/addcampus`, body)
       const res = response.data
-      if (res.status) toast.success('🎉 Campus has been added successfully!')
-      else toast.error(res.message || 'Failed to add campus')
-      return res.data as Campus
+      if (res.status) {
+        toast.success('🎉 Campus has been added successfully!')
+        return (res.data || body) as Campus
+      } else {
+        toast.error(res.message || 'Failed to add campus')
+        return rejectWithValue(res.message || 'Failed to add campus')
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to add campus')
       return rejectWithValue(error.message)
@@ -90,9 +97,13 @@ export const UpdateCampus = createAsyncThunk<Campus, Partial<Campus>>(
     try {
       const response = await axios.put(`${baseURL}/api/campus/updatecampus`, body)
       const res = response.data
-      if (res.status) toast.success('Campus updated successfully!')
-      else toast.error(res.message || 'Failed to update campus')
-      return res.data as Campus
+      if (res.status) {
+        toast.success('Campus updated successfully!')
+        return (res.data || body) as Campus
+      } else {
+        toast.error(res.message || 'Failed to update campus')
+        return rejectWithValue(res.message || 'Failed to update campus')
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to update campus')
       return rejectWithValue(error.message)
