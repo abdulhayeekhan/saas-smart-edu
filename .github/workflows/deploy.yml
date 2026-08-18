@@ -28,15 +28,17 @@ jobs:
           REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
           REACT_APP_BOOKS_API_URL: ${{ secrets.REACT_APP_BOOKS_API_URL }}
 
-      - name: Deploy to Hostinger via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./build/
-          # If the FTP user was created specifically for the 'app' folder:
-          server-dir: ./
-          # If using the main/master Hostinger FTP account instead, use:
-          # server-dir: domains/smartedu.site/public_html/app/
-          dangerous-clean-slate: false
+      - name: Deploy to Hostinger via FTP (lftp)
+        env:
+          FTP_HOST: ${{ secrets.FTP_SERVER }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y lftp
+          lftp -c "
+            set ftp:ssl-allow no;
+            set net:timeout 15;
+            set net:max-retries 3;
+            open -u '$FTP_USER','$FTP_PASS' '$FTP_HOST';
+            mirror -R -e -v ./build/ ./
+          "
