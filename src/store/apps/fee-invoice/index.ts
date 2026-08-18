@@ -90,6 +90,7 @@ export interface ManualReceiptPayload {
     receiptAccount: number;
     referenceNo: string;
     detail: {
+        id?: number;
         feeTypeId: number;
         month: string;
         amountReceived: number;

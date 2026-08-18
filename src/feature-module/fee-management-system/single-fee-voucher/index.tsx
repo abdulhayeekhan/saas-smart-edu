@@ -202,10 +202,10 @@ const SingleFeeVoucher: React.FC<Props> = ({ data }) => {
                     />
 
                     <div style={{ textAlign: 'center' }}>
-                        <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                        <h2 style={{ margin: 0, fontFamily: "'RevuenCustom', sans-serif", fontSize: '15px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
                             {BrandName}
                         </h2>
-                        <p style={{ margin: 0, fontSize: '12px', fontWeight: 500 }}>{data.campus}</p>
+                        <p style={{ margin: 0, fontFamily: "'RevuenCustom', sans-serif", fontSize: '12px', fontWeight: 500 }}>{data.campus}</p>
                     </div>
                 </div>
 

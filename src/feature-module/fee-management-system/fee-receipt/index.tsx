@@ -72,6 +72,7 @@ interface SearchInvoice {
     receiptAccount?: number;
     referenceNo?: string;
     detail?: {
+        id?: number;
         feeTypeId: number;
         month: string;
         amountReceived: number;
@@ -231,8 +232,9 @@ const FeeReceipt = () => {
             const data: any = await dispatch(GetInvoiceByNumber(searchInvoice))
             const payload = data?.payload;
             if (payload) {
-                // 1. Map the API 'details' to your state's 'detail' format
+                // 1. Map the API 'details' to your state's 'detail' format (including unique detail id)
                 const mappedDetails = payload.details.map((item: any) => ({
+                    id: item.id,
                     feeTypeId: item.feeTypeId,
                     month: item.invoiceMonth,
                     amountReceived: item.remainingAmount // Mapping remaining to received as requested
@@ -286,6 +288,7 @@ const FeeReceipt = () => {
 
     const handleReceiptChange = (
         e: React.ChangeEvent<HTMLInputElement>,
+        detailId: number,
         feeTypeId: number,
         month: string,
         maxAmount: number
@@ -302,7 +305,7 @@ const FeeReceipt = () => {
         setSearchInvoice((prev) => ({
             ...prev,
             detail: prev?.detail?.map((d) =>
-                d.feeTypeId === feeTypeId && d.month === month
+                (d.id ? d.id === detailId : (d.feeTypeId === feeTypeId && d.month === month))
                     ? { ...d, amountReceived: value }
                     : d
             ),
@@ -665,8 +668,8 @@ const FeeReceipt = () => {
                                                         </thead>
                                                         <tbody>
                                                             {formData?.details?.map(item => {
-                                                                // Find the corresponding state entry for this specific fee type AND month
-                                                                const stateDetail = searchInvoice?.detail?.find(d => d.feeTypeId === item.feeTypeId && d.month === item.invoiceMonth);
+                                                                // Find the corresponding state entry for this specific fee item (by unique id first, then fallback to feeTypeId+month)
+                                                                const stateDetail = searchInvoice?.detail?.find(d => d.id ? d.id === item.id : (d.feeTypeId === item.feeTypeId && d.month === item.invoiceMonth));
                                                                 return (
                                                                     <tr key={item?.id}>
                                                                         <td><strong>{item?.feeName}</strong> <small>({dayjs(item?.invoiceMonth).format("MMM-YYYY")})</small></td>
@@ -679,7 +682,7 @@ const FeeReceipt = () => {
                                                                                 className="form-control form-control-sm"
                                                                                 // Show the value from searchInvoice state
                                                                                 value={stateDetail?.amountReceived !== undefined && stateDetail?.amountReceived !== null ? stateDetail.amountReceived : ""}
-                                                                                onChange={(e) => handleReceiptChange(e, item.feeTypeId, item.invoiceMonth, item.remainingAmount)}
+                                                                                onChange={(e) => handleReceiptChange(e, item.id, item.feeTypeId, item.invoiceMonth, item.remainingAmount)}
                                                                                 placeholder="RECEIPT AMOUNT"
                                                                             />
                                                                         </td>

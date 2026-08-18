@@ -4,40 +4,41 @@ import { GetChildAccount } from '../../../../store/apps/campus-coa';
 
 export const useCampusFeeRecAccount = () => {
   const dispatch = useDispatch();
-  
-    const [options, setOptions] = useState([
-      { value: "", label: "-- SELECT ACCOUNT --" }
-    ]);
-  
-    useEffect(() => {
-      // clear previous options immediately when campus changes
-      setOptions([{ value: "", label: "-- SELECT ACCOUNT --" }]);
-  
-      const fetchData = async () => {
-        try {
-          const data = await dispatch(
-            GetChildAccount({
-              id: 61
-            })
-          ).unwrap(); // prevents stale payload
-  
-          const mappedData = (data ?? []).map(item => ({
-            value: item.id,
-            label: item.accountName
-          }));
-    
-          setOptions([
-            { value: "", label: "-- SELECT ACCOUNT --" },
-            ...mappedData
-          ]);
-        } catch (error) {
-          //API failed / 404 → keep dropdown empty
-          setOptions([{ value: "", label: "-- SELECT ACCOUNT --" }]);
-        }
-      };
-  
-      fetchData();
-    }, [dispatch]);
-  
-    return options;
+
+  const [options, setOptions] = useState([
+    { value: "", label: "-- SELECT ACCOUNT --" }
+  ]);
+
+  useEffect(() => {
+    // clear previous options immediately when campus changes
+    setOptions([{ value: "", label: "-- SELECT ACCOUNT --" }]);
+
+    const fetchData = async () => {
+      try {
+        const data = await dispatch(
+          GetChildAccount({
+            id: 88
+          })
+        ).unwrap(); // prevents stale payload
+
+        const mappedData = (data ?? []).map(item => ({
+          value: item.id,
+          label: item.accountName
+        }));
+
+        console.log('mappedData:', mappedData)
+        setOptions([
+          { value: "", label: "-- SELECT ACCOUNT --" },
+          ...mappedData
+        ]);
+      } catch (error) {
+        //API failed / 404 → keep dropdown empty
+        setOptions([{ value: "", label: "-- SELECT ACCOUNT --" }]);
+      }
+    };
+
+    fetchData();
+  }, [dispatch]);
+
+  return options;
 };

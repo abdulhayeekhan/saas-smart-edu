@@ -12,7 +12,7 @@ export const getRegionLogoUrl = (logoPath?: string | null) => {
 }
 export const Companylogo = 'assets/img/logo-smart-edu.svg'
 export const CompnayIcon = 'assets/img/logo-small.svg'
-export const BrandName = 'SMART EDU'
+export const BrandName = 'DAR-E-ARQAM SCHOOL'
 export const CompanyWhiteLogo = 'assets/img/logo-dark.svg'
 export const CoverPhoto = 'assets/img/logo-smart-edu.svg'
 export const Copyright = 'Smart Edu'

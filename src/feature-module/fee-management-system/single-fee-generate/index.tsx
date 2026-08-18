@@ -119,6 +119,7 @@ const SingleFeeGenerate = () => {
         userId: userId,
         newAdmission: false,
     });
+
     const [createSecurityDeposit, setCreateSecurityDeposit] = useState(false);
     const [securityDepositAmount, setSecurityDepositAmount] = useState(0);
 
@@ -232,21 +233,22 @@ const SingleFeeGenerate = () => {
             toast.error("Please fill in all required fields.");
             return;
         }
+        console.log('submit req:', formData)
         try {
             const resultAction = await dispatch(GenerateSingleInvoice(formData as SingleInvoicePayload));
 
             if (GenerateSingleInvoice.fulfilled.match(resultAction)) {
                 const results = resultAction.payload;
-                
+
                 // Handle both array and single object responses
                 const isArray = Array.isArray(results);
                 setBulkResults(isArray ? results : [results]);
 
-                const successCount = isArray 
-                    ? results.filter((r: any) => r.isSuccess).length 
+                const successCount = isArray
+                    ? results.filter((r: any) => r.isSuccess).length
                     : (results ? 1 : 0);
-                const failureCount = isArray 
-                    ? results.filter((r: any) => !r.isSuccess).length 
+                const failureCount = isArray
+                    ? results.filter((r: any) => !r.isSuccess).length
                     : 0;
 
                 console.log('successCount:', successCount, 'failureCount', failureCount);

@@ -17,7 +17,7 @@ export const useHOBankAccount = (campusId) => {
       try {
         const data = await dispatch(
           GetChildAccount({
-            id: 177,
+            id: 86,
             campusId: campusId ?? 0
           })
         ).unwrap(); // prevents stale payload
@@ -26,7 +26,7 @@ export const useHOBankAccount = (campusId) => {
           value: item.id,
           label: `${item.accountCode} - ${item.accountName}`
         }));
-  
+
         setOptions([
           { value: "", label: "-- SELECT ACCOUNT --" },
           ...mappedData
