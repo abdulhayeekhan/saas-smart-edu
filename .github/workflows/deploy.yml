@@ -16,18 +16,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install Dependencies
-        # Added --legacy-peer-deps to ignore React 18 vs 19 version mismatch
         run: npm ci --legacy-peer-deps
 
       - name: Build Application
-        # Added CI=false to ignore ESLint warnings during build
         run: CI=false npm run build
         env:
-          # Ensure these match the exact names in your project (e.g., REACT_APP_...)
           REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
           REACT_APP_BOOKS_API_URL: ${{ secrets.REACT_APP_BOOKS_API_URL }}
 
@@ -38,5 +35,8 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./build/
-          server-dir: /home/u201583452/domains/smartedu.site/public_html/app/
+          # If the FTP user was created specifically for the 'app' folder:
+          server-dir: ./
+          # If using the main/master Hostinger FTP account instead, use:
+          # server-dir: domains/smartedu.site/public_html/app/
           dangerous-clean-slate: false
