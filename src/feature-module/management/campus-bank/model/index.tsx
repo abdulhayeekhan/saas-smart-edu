@@ -28,7 +28,7 @@ const CampusBankModel: React.FC<CampusBankModalProps> = ({ isEditData }) => {
     id: 0,
     campusId: userInfo?.userLevel === 3 ? userInfo?.userLevelId : 0,
     bankId: 0,
-    accountId: 60,
+    accountId: 87,
     accountTitle: "",
     iban: ""
   };
@@ -57,7 +57,7 @@ const CampusBankModel: React.FC<CampusBankModalProps> = ({ isEditData }) => {
     //     setFormData(prev => ({ ...prev, accountId: opt.value }));
     // }
   };
-   // Debug log to check form data
+  // Debug log to check form data
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
