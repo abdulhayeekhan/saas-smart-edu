@@ -20,11 +20,13 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci
+        # Added --legacy-peer-deps to ignore React 18 vs 19 version mismatch
+        run: npm ci --legacy-peer-deps
 
       - name: Build Application
         run: npm run build
         env:
+          # Ensure these match the exact names in your project (e.g., REACT_APP_...)
           REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
           REACT_APP_BOOKS_API_URL: ${{ secrets.REACT_APP_BOOKS_API_URL }}
 
@@ -34,6 +36,8 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./build/ # Change to ./dist/ if using Vite (and prefix envs with VITE_)
+          # Use './dist/' if you are using Vite, or './build/' for Create React App
+          local-dir: ./build/ 
+          # Absolute path on Hostinger
           server-dir: /home/u201583452/domains/smartedu.site/public_html/app/
           dangerous-clean-slate: false
