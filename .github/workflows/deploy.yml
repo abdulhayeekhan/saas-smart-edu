@@ -26,7 +26,6 @@ jobs:
         run: CI=false npm run build
         env:
           REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
-          REACT_APP_BOOKS_API_URL: ${{ secrets.REACT_APP_BOOKS_API_URL }}
 
       - name: Deploy to Hostinger via FTP (lftp)
         env:

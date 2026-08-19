@@ -37,10 +37,10 @@ const BooksOrder = () => {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<Category[]>([]);
-  
+
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
-  
+
   const [products, setProducts] = useState<Product[]>([]);
 
   // 1. Initial Auth and fetch main categories
@@ -55,7 +55,7 @@ const BooksOrder = () => {
           userName: "admin@gmail.com",
           password: "admin@123",
         });
-        
+
         const token = authRes.data.bearerToken;
         if (!token) throw new Error("No token received");
         setAuthToken(token);
@@ -64,7 +64,7 @@ const BooksOrder = () => {
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const catRes = await localAxios.get("/books-api/api/ProductCategories", config);
         setCategories(catRes.data);
-        
+
         setLoading(false);
       } catch (err: any) {
         setError(err.message || "An error occurred");
@@ -102,7 +102,7 @@ const BooksOrder = () => {
         setLoading(true);
         const localAxios = axios.create();
         const config = { headers: { Authorization: `Bearer ${authToken}` } };
-        
+
         let url = "/books-api/api/Product";
         const targetCategoryId = selectedSubCategory || selectedCategory;
         if (targetCategoryId) {
@@ -158,9 +158,9 @@ const BooksOrder = () => {
           </div>
           <div className="col-md-4">
             <label className="form-label">Sub Grade</label>
-            <select 
-              className="form-select" 
-              value={selectedSubCategory} 
+            <select
+              className="form-select"
+              value={selectedSubCategory}
               onChange={(e) => setSelectedSubCategory(e.target.value)}
               disabled={!selectedCategory || !subCategories.length}
             >
@@ -198,11 +198,11 @@ const BooksOrder = () => {
                           <tr><td colSpan={5} className="text-center">No products found</td></tr>
                         ) : (
                           products.map((product) => {
-                            const baseUrl = process.env.REACT_APP_BOOKS_API_URL || "http://72.61.148.72";
-                            const imgUrl = product.productUrl 
+                            const baseUrl = "http://72.61.148.72";
+                            const imgUrl = product.productUrl
                               ? (product.productUrl.startsWith('http') ? product.productUrl : `${baseUrl}/${product.productUrl.replace(/^\//, '')}`)
                               : "https://via.placeholder.com/50?text=No+Image";
-                            
+
                             return (
                               <tr key={product.id}>
                                 <td>

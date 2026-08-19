@@ -22,7 +22,7 @@ const ProductDetail = () => {
           userName: "admin@gmail.com",
           password: "admin@123",
         });
-        
+
         const token = authRes.data.bearerToken;
         if (!token) throw new Error("No token received");
 
@@ -50,15 +50,15 @@ const ProductDetail = () => {
           const listRes = await localAxios.get(`/books-api/api/ProductCategories`, config);
           const mainCategories = listRes.data;
           let matchedCategory = mainCategories.find((c: any) => c.id === fetchedProduct.categoryId);
-          
+
           if (!matchedCategory && mainCategories.length > 0) {
             // Fetch subcategories for all main categories concurrently to find the match
-            const subCatPromises = mainCategories.map((c: any) => 
+            const subCatPromises = mainCategories.map((c: any) =>
               localAxios.get(`/books-api/api/ProductCategories?Id=${c.id}`, config)
             );
             const subCatResponses = await Promise.all(subCatPromises);
             const allSubCategories = subCatResponses.flatMap(res => res.data);
-            
+
             matchedCategory = allSubCategories.find((c: any) => c.id === fetchedProduct.categoryId);
           }
 
@@ -70,7 +70,7 @@ const ProductDetail = () => {
         }
 
         setProduct(fetchedProduct);
-        
+
         setLoading(false);
       } catch (err: any) {
         setError(err.message || "An error occurred");
@@ -102,8 +102,8 @@ const ProductDetail = () => {
     }
   };
 
-  const baseUrl = process.env.REACT_APP_BOOKS_API_URL || "http://72.61.148.72";
-  const imgUrl = product?.productUrl 
+  const baseUrl = "http://72.61.148.72";
+  const imgUrl = product?.productUrl
     ? (product.productUrl.startsWith('http') ? product.productUrl : `${baseUrl}/${product.productUrl.replace(/^\//, '')}`)
     : "https://via.placeholder.com/250?text=No+Image";
 
@@ -148,10 +148,10 @@ const ProductDetail = () => {
                         <span className="badge bg-primary me-2">{product.categoryName || 'No Category'}</span>
                         {product.brandImageUrl ? (
                           <span className="badge bg-secondary d-flex align-items-center">
-                            <img 
-                              src={product.brandImageUrl.startsWith('http') ? product.brandImageUrl : `${baseUrl}/${product.brandImageUrl.replace(/^\//, '')}`} 
-                              alt={product.brandName} 
-                              style={{ width: '20px', height: '20px', marginRight: '5px', borderRadius: '50%' }} 
+                            <img
+                              src={product.brandImageUrl.startsWith('http') ? product.brandImageUrl : `${baseUrl}/${product.brandImageUrl.replace(/^\//, '')}`}
+                              alt={product.brandName}
+                              style={{ width: '20px', height: '20px', marginRight: '5px', borderRadius: '50%' }}
                             />
                             {product.brandName}
                           </span>
@@ -159,7 +159,7 @@ const ProductDetail = () => {
                           <span className="badge bg-secondary">{product.brandName || 'No Brand'}</span>
                         )}
                       </div>
-                      
+
                       <div className="mt-4">
                         <h5>Description</h5>
                         <p>{product.description || 'No description available.'}</p>
@@ -179,14 +179,14 @@ const ProductDetail = () => {
                           </tbody>
                         </table>
                       </div>
-                      
+
                       <div className="mt-4 d-flex align-items-center bg-light p-3 rounded">
                         <label className="me-3 fw-bold mb-0">Quantity:</label>
-                        <input 
-                          type="number" 
-                          className="form-control me-3" 
-                          style={{ width: '100px' }} 
-                          min="1" 
+                        <input
+                          type="number"
+                          className="form-control me-3"
+                          style={{ width: '100px' }}
+                          min="1"
                           step="1"
                           placeholder="Qty"
                           value={quantity}
@@ -197,7 +197,7 @@ const ProductDetail = () => {
                             }
                           }}
                         />
-                        <button 
+                        <button
                           className="btn btn-primary"
                           onClick={handleAddToCart}
                         >
