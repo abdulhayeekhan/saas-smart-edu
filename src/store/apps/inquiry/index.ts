@@ -53,9 +53,9 @@ export interface InquiryFilter {
   pageNo: number
   pageSize: number
   search?: string
-  gradeId?: number
-  campusId?: number
-  regionId?: number
+  gradeId?: number | null
+  campusId?: number | null
+  regionId?: number | null
 }
 
 
@@ -157,8 +157,16 @@ export const AddInquiry = createAsyncThunk<
       toast.error(data.message || 'Failed to add inquiry')
       return rejectWithValue(data.message)
     } catch (error: any) {
-      toast.error(error.message)
-      return rejectWithValue(error.message)
+      const serverMessage =
+        error.response?.data?.message ||
+        (error.response?.data?.errors
+          ? Object.values(error.response.data.errors).flat().join(', ')
+          : null) ||
+        (typeof error.response?.data === 'string' ? error.response.data : null) ||
+        error.message ||
+        'Failed to add inquiry';
+      toast.error(serverMessage)
+      return rejectWithValue(serverMessage)
     }
   }
 )
@@ -185,6 +193,15 @@ const InquirySlice = createSlice({
   reducers: {
     clearInquirySingle: state => {
       state.single = null
+    },
+    resetInquiryState: state => {
+      state.data = []
+      state.totalCount = 0
+      state.totalPages = 0
+      state.currentPage = 1
+      state.loading = false
+      state.message = ''
+      state.status = false
     },
   },
   extraReducers: builder => {
@@ -232,5 +249,5 @@ const InquirySlice = createSlice({
   },
 })
 
-export const { clearInquirySingle } = InquirySlice.actions
+export const { clearInquirySingle, resetInquiryState } = InquirySlice.actions
 export default InquirySlice.reducer

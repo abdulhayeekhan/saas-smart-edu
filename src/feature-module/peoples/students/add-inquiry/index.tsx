@@ -65,9 +65,9 @@ export const initialInquiryState = {
   cStreetNo: '',
   cTown: '',
 
-  pCountryId: null,
-  pCityId: null,
-  pProvinceId: null,
+  pCountryId: 1,
+  pCityId: 0,
+  pProvinceId: 0,
   pHouseNo: '',
   pStreetNo: '',
   pTown: '',
@@ -75,7 +75,7 @@ export const initialInquiryState = {
   referenceId: 1,
   gradeId: 0,
   sessionId: 0,
-  status: 'New',
+  status: 'Inquiry',
   isDeleted: false,
 }
 
@@ -96,7 +96,7 @@ const AddStudentInquiry = () => {
     const newErrors: Record<string, string> = {};
 
     // List of fields that ARE allowed to be empty
-    const optionalFields = ['middleName', 'sessionId', 'inquiryNo', 'pCountryId', 'cHouseNo', 'cStreetNo', 'cTown', 'pCityId', 'pProvinceId', 'pHouseNo', 'pStreetNo', 'pTown'];
+    const optionalFields = ['middleName', 'inquiryNo', 'pCountryId', 'cHouseNo', 'cStreetNo', 'cTown', 'pCityId', 'pProvinceId', 'pHouseNo', 'pStreetNo', 'pTown'];
 
     Object.keys(initialInquiryState).forEach((key) => {
       if (optionalFields.includes(key)) return;
@@ -135,18 +135,33 @@ const AddStudentInquiry = () => {
   };
 
   const handleSelectCountry = (name: string, option: any) => {
-    setCountryId(option?.value ?? 0);
+    const val = option?.value ?? 0;
+    setCountryId(val);
     setForm(prev => ({
       ...prev,
-      cCountryId: option?.value,
+      cCountryId: val,
+      pCountryId: val,
     }))
   }
+
   const handleSelectState = (name: string, option: any) => {
-    setStateId(option?.value ?? 0);
+    const val = option?.value ?? 0;
+    setStateId(val);
     setForm(prev => ({
       ...prev,
-      cProvinceId: option?.value,
-      cCityId: 0
+      cProvinceId: val,
+      pProvinceId: val,
+      cCityId: 0,
+      pCityId: 0,
+    }))
+  }
+
+  const handleSelectCity = (name: string, option: any) => {
+    const val = option?.value ?? 0;
+    setForm(prev => ({
+      ...prev,
+      cCityId: val,
+      pCityId: val,
     }))
   }
 
@@ -258,6 +273,7 @@ const AddStudentInquiry = () => {
     }
     setIsSave(true)
     try {
+      console.log('formdata:', form)
       await dispatch(AddInquiry(form) as any);
     } catch (error) {
       console.log(error)
@@ -281,12 +297,32 @@ const AddStudentInquiry = () => {
     setNewContents(newContents.filter((_, i) => i !== index));
   };
   useEffect(() => {
-    if (loginInfo?.userLevel === 3) {
+    if (lastSessionId && Number(lastSessionId) > 0) {
       setForm(prev => ({
         ...prev,
-        campusId: loginInfo?.userLevelId,
-      }))
+        sessionId: Number(lastSessionId)
+      }));
     }
+  }, [lastSessionId]);
+
+  useEffect(() => {
+    if (loginInfo?.userLevel === 3 && loginInfo?.userLevelId) {
+      setForm(prev => ({
+        ...prev,
+        campusId: Number(loginInfo?.userLevelId)
+      }));
+    } else if (campuses && campuses.length > 0 && (!form.campusId || form.campusId === 0)) {
+      const firstValidCampus = campuses.find((c: any) => Number(c.value) > 0);
+      if (firstValidCampus) {
+        setForm(prev => ({
+          ...prev,
+          campusId: Number(firstValidCampus.value)
+        }));
+      }
+    }
+  }, [loginInfo?.userLevel, loginInfo?.userLevelId, campuses]);
+
+  useEffect(() => {
     if (location.pathname === routes.editStudent) {
       const today = new Date();
       const year = today.getFullYear();
@@ -294,22 +330,16 @@ const AddStudentInquiry = () => {
       const day = String(today.getDate()).padStart(2, "0");
       const formattedDate = `${month}-${day}-${year}`;
       const defaultValue = dayjs(formattedDate);
-      setIsEdit(true)
-      setOwner(["English"])
-      setOwner1(["Medecine Name"])
-      setOwner2(["Allergy", "Skin Allergy"])
-      setDefaultDate(defaultValue)
-      console.log(formattedDate, 11);
-
+      setIsEdit(true);
+      setOwner(["English"]);
+      setOwner1(["Medecine Name"]);
+      setOwner2(["Allergy", "Skin Allergy"]);
+      setDefaultDate(defaultValue);
     } else {
-      setIsEdit(false)
-      setDefaultDate(null)
+      setIsEdit(false);
+      setDefaultDate(null);
     }
-    setForm(prev => ({
-      ...prev,
-      sessionId: lastSessionId ? lastSessionId : null
-    }))
-  }, [location.pathname])
+  }, [location.pathname]);
 
   return (
     <>
@@ -726,7 +756,7 @@ const AddStudentInquiry = () => {
                               className="select"
                               options={cities}
                               onChange={(option) =>
-                                handleSelectChange('cCityId', option)
+                                handleSelectCity('cCityId', option)
                               }
                               //value={isEdit ? cities[0]}
                               value={form?.cCityId !== 0 ? cities.find(c => c.value === form.cCityId) : cities[0]}

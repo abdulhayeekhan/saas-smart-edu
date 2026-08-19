@@ -88,6 +88,7 @@ export interface AdmissionFilter {
   gradeId?: number | null
   sectionId?: number | null
   campusId?: number | null
+  regionId?: number | null
   isEnabled: boolean
 }
 
@@ -312,10 +313,10 @@ export const BulkImportAdmissions = createAsyncThunk<any, { campusId: number; us
       const formData = new FormData();
       formData.append('file', file);
 
+      const cleanBaseURL = (baseURL || '').trim();
       const { data } = await axios.post(
-        `${baseURL}/api/Admission/bulk-import?campusId=${campusId}&userId=${userId}`,
-        formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        `${cleanBaseURL}/api/Admission/bulk-import?campusId=${campusId}&userId=${userId}`,
+        formData
       );
       toast.success('Bulk import successful');
       return data;

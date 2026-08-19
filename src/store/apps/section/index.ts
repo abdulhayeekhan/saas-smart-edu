@@ -45,6 +45,9 @@ export const GetSectionsByCampus = createAsyncThunk<
 >(
   'section/getSectionsByCampus',
   async (campusId, { rejectWithValue }) => {
+    if (!campusId || campusId <= 0) {
+      return [];
+    }
     try {
       const { data } = await axios.get(
         `${baseURL}/api/Section/GetSectionsByCampus?campusId=${campusId}`

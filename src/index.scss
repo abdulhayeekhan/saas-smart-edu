@@ -1589,6 +1589,31 @@ body.app-chat {
   }
 }
 
+/* Fix for react-select dropdown overlap with table headers and containers */
+.react-select__menu,
+.react-select__menu-portal {
+  z-index: 99999 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18) !important;
+}
+
+.react-select__menu-list {
+  background-color: #ffffff !important;
+}
+
+.react-select__option {
+  background-color: #ffffff;
+  color: #262a2a;
+}
+.react-select__option--is-focused {
+  background-color: #f0f4ff !important;
+  color: #7C3AED !important;
+}
+.react-select__option--is-selected {
+  background-color: #7C3AED !important;
+  color: #ffffff !important;
+}
+
 
 
 

@@ -17,9 +17,10 @@ const processQueue = (error: any, token: string | null = null) => {
 
 axios.interceptors.request.use(
   (config) => {
-    const token = window.localStorage.getItem(authConfig.storageTokenKeyName);
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+    const rawToken = window.localStorage.getItem(authConfig.storageTokenKeyName) || window.localStorage.getItem('accessToken');
+    if (rawToken) {
+      const cleanToken = rawToken.trim();
+      config.headers['Authorization'] = cleanToken.startsWith('Bearer ') ? cleanToken : `Bearer ${cleanToken}`;
     }
     return config;
   },

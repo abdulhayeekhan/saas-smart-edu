@@ -136,7 +136,7 @@ const NoticeBoard = () => {
   const RegionsList = useRegionsList()
   const rolesList = useRolesList(3)
   const filtered: OptionItem[] = RegionsList.filter((item: { value: any }) => item.value !== null);
-  const filteredRoles: OptionItem[] = rolesList.filter((item: { value: any }) => item.value !== '');
+  const filteredRoles: OptionItem[] = rolesList.filter((item: { value: any }) => item.value !== '') as OptionItem[];
   const [noticeAddInfo, setNoticeAddInfo] = useState<Notice>({
     title: '',
     noticeDate: '',

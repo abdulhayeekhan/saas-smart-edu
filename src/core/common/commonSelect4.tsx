@@ -59,6 +59,12 @@ const CommonSelect4 = <T extends string | number>({
       isDisabled={loading || isDisabled}
       isSearchable={true}
       name={name}
+      menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}
+      menuPosition="fixed"
+      styles={{
+        menuPortal: (base: any) => ({ ...base, zIndex: 99999 }),
+        menu: (base: any) => ({ ...base, zIndex: 99999, backgroundColor: "#ffffff" }),
+      }}
     />
   );
 };

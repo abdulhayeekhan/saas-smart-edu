@@ -16,7 +16,7 @@ import "slick-carousel/slick/slick-theme.css";
 import AdminDashboardModal from "./adminDashboardModal";
 import type { RootState, AppDispatch } from "../../../store";
 import { useDispatch, useSelector } from "react-redux";
-import { InquiryFilter, GetInquiries } from '../../../store/apps/inquiry';
+import { InquiryFilter, GetInquiries, resetInquiryState } from '../../../store/apps/inquiry';
 import { GetAdmissions, AdmissionFilter } from '../../../store/apps/admissions';
 import { AddNotice, EditNotice, GetAllNotices, GetNoticeById, NoticeFilter, Notice } from '../../../store/apps/noticeBoard';
 import axios from "axios";
@@ -87,16 +87,13 @@ const AdminDashboard = () => {
     if (userLevel === 2 || userLevel === 1) {
       const fetchCampuses = async () => {
         try {
-          const storedToken = localStorage.getItem('accessToken') || '';
           const body = {
             pageNo: 1,
             pageSize: 10000,
             isEnabled: true,
             ...(userLevel === 2 && userLevelId ? { regionId: userLevelId } : {})
           };
-          const { data } = await axios.post(`${baseURL}/api/campus/getall`, body, {
-            headers: storedToken ? { Authorization: storedToken } : {},
-          });
+          const { data } = await axios.post(`${baseURL}/api/campus/getall`, body);
           if (data?.data && Array.isArray(data.data)) {
             let list = data.data;
             if (userLevel === 2 && userLevelId) {
@@ -136,6 +133,11 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => {
+    if (userLevel === 2 && (!selectedCampusId || Number(selectedCampusId) <= 0)) {
+      dispatch(resetInquiryState());
+      return;
+    }
+
     let currentFilter: any = {
       ...inquiryFilter,
       pageNo: 1,
@@ -150,12 +152,8 @@ const AdminDashboard = () => {
         delete currentFilter.campusId;
       }
     } else if (userLevel === 2) {
-      currentFilter.regionId = userLevelId;
-      if (selectedCampusId) {
-        currentFilter.campusId = selectedCampusId;
-      } else {
-        delete currentFilter.campusId;
-      }
+      currentFilter.campusId = selectedCampusId;
+      delete currentFilter.regionId;
     } else if (userLevel === 3) {
       currentFilter.campusId = userLevelId;
       delete currentFilter.regionId;
@@ -174,6 +172,11 @@ const AdminDashboard = () => {
   const [totalAdmissions, setTotalAdmissions] = useState(0)
 
   useEffect(() => {
+    if (userLevel === 2 && (!effectiveCampusId || Number(effectiveCampusId) <= 0)) {
+      setTotalAdmissions(0);
+      return;
+    }
+
     const currentAdmissionFilter = {
       ...admissionFilter,
       pageNo: 1,
@@ -185,10 +188,7 @@ const AdminDashboard = () => {
     const GetAdmissionsList = async () => {
       try {
         setTotalAdmissions(0)
-        const storedToken = localStorage.getItem('accessToken') || '';
-        const { data } = await axios.post(`${baseURL}/api/Admission/GetAll`, currentAdmissionFilter, {
-          headers: storedToken ? { Authorization: storedToken } : {},
-        })
+        const { data } = await axios.post(`${baseURL}/api/Admission/GetAll`, currentAdmissionFilter);
         setTotalAdmissions(data?.totalCount || 0)
       } catch (error) {
         console.error("Failed to fetch admissions list", error);
@@ -199,10 +199,14 @@ const AdminDashboard = () => {
 
   const [totalTeachers, setTotalTeachers] = useState(0);
   useEffect(() => {
+    if (userLevel === 2 && (!effectiveCampusId || Number(effectiveCampusId) <= 0)) {
+      setTotalTeachers(0);
+      return;
+    }
+
     const GetTeachersList = async () => {
       try {
         setTotalTeachers(0);
-        const storedToken = localStorage.getItem('accessToken') || '';
         const payload = {
           pageNo: 1,
           pageSize: 1,
@@ -214,9 +218,7 @@ const AdminDashboard = () => {
           gender: null,
           isActive: true
         };
-        const { data } = await axios.post(`${baseURL}/api/HREmployee/GetAll`, payload, {
-          headers: storedToken ? { Authorization: storedToken } : {},
-        });
+        const { data } = await axios.post(`${baseURL}/api/HREmployee/GetAll`, payload);
         setTotalTeachers(data?.totalCount || 0);
       } catch (error) {
         console.error("Failed to fetch teachers list", error);
@@ -565,17 +567,29 @@ const AdminDashboard = () => {
   ]);
 
   const fetchCampusFeeStats = async (filterValue: number) => {
+    if (userLevel === 2 && (!effectiveCampusId || Number(effectiveCampusId) <= 0)) {
+      setFeeStats(null);
+      setFeesBarSeries([
+        { name: 'Collected Fee', data: [] },
+        { name: 'Total Fee', data: [] },
+      ]);
+      setFeesBarOptions((prev: any) => ({
+        ...prev,
+        xaxis: {
+          ...prev.xaxis,
+          categories: [],
+        },
+      }));
+      return;
+    }
+
     try {
       const body = {
         campusId: effectiveCampusId || null,
-        regionId: (userLevel === 2 && !effectiveCampusId) ? userLevelId : null,
         filter: filterValue,
       };
 
-      const storedToken = localStorage.getItem('accessToken') || '';
-      const response = await axios.post(`${baseURL}/api/Dashboard/GetCampusFeeStats`, body, {
-        headers: storedToken ? { Authorization: storedToken } : {},
-      });
+      const response = await axios.post(`${baseURL}/api/Dashboard/GetCampusFeeStats`, body);
 
       const responseData = response?.data;
       if (responseData?.status) {
@@ -623,17 +637,18 @@ const AdminDashboard = () => {
   }, [userLevel, userLevelId, effectiveCampusId, selectedGlobalFilter.value]);
 
   const fetchCampusEarningExpenseStats = async (filterValue: number) => {
+    if (userLevel === 2 && (!effectiveCampusId || Number(effectiveCampusId) <= 0)) {
+      setEarningExpenseStats(null);
+      return;
+    }
+
     try {
       const body = {
         campusId: effectiveCampusId || null,
-        regionId: (userLevel === 2 && !effectiveCampusId) ? userLevelId : null,
         filter: filterValue,
       };
 
-      const storedToken = localStorage.getItem('accessToken') || '';
-      const response = await axios.post(`${baseURL}/api/Dashboard/GetCampusEarningExpenseStats`, body, {
-        headers: storedToken ? { Authorization: storedToken } : {},
-      });
+      const response = await axios.post(`${baseURL}/api/Dashboard/GetCampusEarningExpenseStats`, body);
 
       const responseData = response?.data;
       if (responseData?.status) {

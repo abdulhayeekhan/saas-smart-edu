@@ -49,6 +49,12 @@ const CommonSelect2: React.FC<SelectProps> = ({ options, defaultValue, className
       isLoading={loading}
       isDisabled={loading}
       isSearchable={true}
+      menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}
+      menuPosition="fixed"
+      styles={{
+        menuPortal: (base: any) => ({ ...base, zIndex: 99999 }),
+        menu: (base: any) => ({ ...base, zIndex: 99999, backgroundColor: "#ffffff" }),
+      }}
     />
   );
 };

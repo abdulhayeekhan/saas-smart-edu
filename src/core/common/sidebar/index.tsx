@@ -43,31 +43,55 @@ const Sidebar = () => {
   const [roleRights, setRoleRights] = useState<any[]>([]);
 
 
+  const stripPlural = (str: string) => {
+    let s = str.trim().toLowerCase();
+    if (s.endsWith('ies')) return s.slice(0, -3) + 'y';
+    if (s.endsWith('s') && !s.endsWith('ss')) return s.slice(0, -1);
+    return s;
+  };
+
+  const matchModuleName = (roleModuleName: string, itemLabel: string, explicitModuleName?: string): boolean => {
+    const rName = roleModuleName.trim().toLowerCase();
+    const itemKey = (explicitModuleName || itemLabel).trim().toLowerCase();
+
+    // Exact match
+    if (rName === itemKey) return true;
+
+    // Singular / Plural match (e.g. "admissions" vs "admission", "inquiries" vs "inquiry")
+    if (stripPlural(rName) === stripPlural(itemKey)) return true;
+
+    // Standardized explicit alias mappings
+    if ((rName === 'dashboard' || rName === 'admin dashboard') && (itemKey === 'admin dashboard' || itemKey === 'dashboard')) return true;
+    if ((rName === 'class grade' || rName === 'grades') && (itemKey === 'grades' || itemKey === 'class grade')) return true;
+    if ((rName === 'student card' || rName === 'student cards') && (itemKey === 'student card' || itemKey === 'student cards')) return true;
+
+    return false;
+  };
+
   const filterSidebarData = (
     sidebarData: SidebarItem[],
     roleRights: RoleRight[]
   ): SidebarItem[] => {
     return sidebarData
       .map((item): SidebarItem | null => {
-
         const filteredSubmenu = item.submenuItems
           ? filterSidebarData(item.submenuItems, roleRights)
           : [];
 
-        // Case 1: If children survive → keep parent
+        // If sub-items survive after filtering, retain the parent item with filtered sub-items
         if (filteredSubmenu.length > 0) {
           return { ...item, submenuItems: filteredSubmenu };
         }
 
-        // 🔑 Use moduleName OR label for matching
-        const key = (item.moduleName ?? item.label ?? "")
-          .trim()
-          .toLowerCase();
+        // If the item itself has children in original definition but none survived, discard this parent
+        if (item.submenuItems && item.submenuItems.length > 0) {
+          return null;
+        }
 
+        // Leaf menu item: check against role rights
         const hasViewRight = roleRights.some((r) => {
-          if (!r.moduleName) return false;
-          const rName = r.moduleName.trim().toLowerCase();
-          return (rName === key || rName.includes(key) || key.includes(rName)) && r.viewRight;
+          if (!r.moduleName || !r.viewRight) return false;
+          return matchModuleName(r.moduleName, item.label, item.moduleName);
         });
 
         if (hasViewRight) {

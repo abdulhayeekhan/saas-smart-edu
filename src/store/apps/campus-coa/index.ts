@@ -40,14 +40,8 @@ export const GetChartofAccountByID = createAsyncThunk<ChartOfAccount, number>(
     'getchartofaccountbyid',
     async (id, { rejectWithValue }) => {
         try {
-            const storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
             const { data }: AxiosResponse<{ data: ChartOfAccount }> = await axios.get(
-                `${baseURL}/api/BChartOfAccount/GetAccountById?id=${id}`,
-                {
-                    headers: {
-                        Authorization: storedToken ?? ''
-                    }
-                }
+                `${baseURL}/api/BChartOfAccount/GetAccountById?id=${id}`
             )
             return data.data
         } catch (error) {

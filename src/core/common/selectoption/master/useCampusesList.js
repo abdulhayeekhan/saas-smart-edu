@@ -37,10 +37,7 @@ export const useCampusesList = (customRegionId) => {
       };
 
       try {
-        const storedToken = localStorage.getItem('accessToken') || '';
-        const response = await axios.post(`${baseURL}/api/campus/getall`, filter, {
-          headers: storedToken ? { Authorization: storedToken } : {},
-        });
+        const response = await axios.post(`${baseURL}/api/campus/getall`, filter);
         if (isMounted && response?.data?.data && Array.isArray(response.data.data)) {
           setLocalCampuses(response.data.data);
         }

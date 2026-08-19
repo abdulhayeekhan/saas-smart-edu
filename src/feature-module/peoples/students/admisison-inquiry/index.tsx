@@ -23,7 +23,7 @@ import CommonSelect2 from "../../../../core/common/commonSelect2";
 import CommonSelect3 from "../../../../core/common/commonSelect3";
 import TooltipOption from "../../../../core/common/tooltipOption";
 import { exportToPDF } from "../../../../core/common/exportUtils";
-import { InquiryType, GetInquiries } from '../../../../store/apps/inquiry'
+import { InquiryType, GetInquiries, resetInquiryState, InquiryFilter } from '../../../../store/apps/inquiry'
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "../../../../store";
 import { Popover } from "antd";
@@ -34,26 +34,39 @@ const InquiryList = () => {
   const userInfoString = localStorage.getItem("userData");
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
   const loginInfo = userInfo?.data
-  const [regionId, setRegionId] = useState<number>(0);
+  const userLevel = Number(loginInfo?.userLevel || 0);
+  const userLevelId = Number(loginInfo?.userLevelId || 0);
+  const [regionId, setRegionId] = useState<number>(userLevel === 2 ? userLevelId : 0);
   const regionsList = useRegionsList();
-  const campuses = useCampusesList(loginInfo?.userLevel === 2 ? loginInfo?.userLevelId : regionId);
+  const campuses = useCampusesList(userLevel === 2 ? userLevelId : regionId);
   const dispatch = useDispatch<AppDispatch>()
   const { data, totalCount, pageSize, currentPage, loading } = useSelector((state: RootState) => state.inquiry);
   const [pageNo, setPageNo] = useState(currentPage || 1);
   const [search, setSearch] = useState('');
   const [gradeId, setGradeId] = useState(0)
-  const [campusId, setCampusId] = useState(loginInfo?.userLevel === 3 ? loginInfo?.userLevelId : null)
+  const [campusId, setCampusId] = useState<number | null>(userLevel === 3 ? userLevelId : null)
   const hasPermission = usePermission("Inquiries");
   const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    const filter = {
+    if (userLevel === 2 && (!campusId || Number(campusId) <= 0)) {
+      dispatch(resetInquiryState());
+      return;
+    }
+
+    const filter: any = {
       pageNo,
       pageSize,
-      search,
-      campusId
+      search
+    };
+
+    if (campusId && Number(campusId) > 0) {
+      filter.campusId = Number(campusId);
+    } else if (userLevel === 1 && regionId && Number(regionId) > 0) {
+      filter.regionId = Number(regionId);
     }
+
     dispatch(GetInquiries(filter))
-  }, [pageNo, search, campusId])
+  }, [dispatch, pageNo, pageSize, search, campusId, regionId, userLevel, userLevelId])
 
   const handleTableChange = (page: number, size?: number) => {
     setPageNo(page)
@@ -149,7 +162,7 @@ const InquiryList = () => {
               {text}
             </span>
           ) : (
-            <span className="badge badge-soft-danger d-inline-flex align-items-center">
+            <span className="badge badge-soft-warning d-inline-flex align-items-center">
               <i className="ti ti-circle-filled fs-5 me-1"></i>
               {text}
             </span>
@@ -266,7 +279,17 @@ const InquiryList = () => {
                 )}
                 <TooltipOption 
                   onExportPDF={handleExportPDF} 
-                  onRefresh={() => dispatch(GetInquiries({ pageNo, pageSize, search, campusId }))} 
+                  onRefresh={() => {
+                    const refreshFilter: InquiryFilter = { pageNo, pageSize, search };
+                    if (campusId && Number(campusId) > 0) {
+                      refreshFilter.campusId = Number(campusId);
+                    } else if (userLevel === 1 && regionId && Number(regionId) > 0) {
+                      refreshFilter.regionId = Number(regionId);
+                    }
+                    if (userLevel !== 2 || (campusId && Number(campusId) > 0)) {
+                      dispatch(GetInquiries(refreshFilter));
+                    }
+                  }} 
                   onPrint={() => window.print()} 
                 />
                 <div className="dropdown mb-3 me-2">

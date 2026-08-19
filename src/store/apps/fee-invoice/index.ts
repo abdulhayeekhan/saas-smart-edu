@@ -57,6 +57,7 @@ export interface FeeInvoiceFilter {
     gradeId?: number | null;
     sessionId?: number | null;
     campusId?: number | null;
+    regionId?: number | null;
     dateFrom?: string;
     dateTo?: string;
     admissionId?: number | null;

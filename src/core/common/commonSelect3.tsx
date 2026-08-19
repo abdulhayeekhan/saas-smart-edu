@@ -69,6 +69,12 @@ const CommonSelect3 = <T extends string | number>({
       isSearchable={true}
       name={name}
       formatOptionLabel={(option) => option.customLabel || option.label}
+      menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}
+      menuPosition="fixed"
+      styles={{
+        menuPortal: (base: any) => ({ ...base, zIndex: 99999 }),
+        menu: (base: any) => ({ ...base, zIndex: 99999, backgroundColor: "#ffffff" }),
+      }}
     />
   );
 };

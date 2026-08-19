@@ -25,7 +25,7 @@ import { useAcademicSessions } from "../../../core/common/selectoption/academic/
 import FeesModal from "./feesModal";
 import { feesMasterData } from "../../../core/data/json/feesMaster";
 import TooltipOption from "../../../core/common/tooltipOption";
-import { GetFeeInvoices, FeeInvoiceFilter, CancelInvoice, CancelInvoicePayload, DeleteReceipts } from "../../../store/apps/fee-invoice";
+import { GetFeeInvoices, FeeInvoiceFilter, CancelInvoice, CancelInvoicePayload, DeleteReceipts, resetFeeInvoiceState } from "../../../store/apps/fee-invoice";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "../../../store";
 import { Modal, Pagination, Tooltip } from "antd";
@@ -73,10 +73,12 @@ const FeesInvoices = () => {
         setSelectedInvoice(null);
     };
 
-    const [regionId, setRegionId] = useState<number>(0);
+    const userLevel = Number(loginInfo?.userLevel || 0);
+    const userLevelId = Number(loginInfo?.userLevelId || 0);
+    const [regionId, setRegionId] = useState<number>(userLevel === 2 ? userLevelId : 0);
 
     const regionsList = useRegionsList();
-    const campuses = useCampusesList(loginInfo?.userLevel === 2 ? loginInfo?.userLevelId : regionId);
+    const campuses = useCampusesList(userLevel === 2 ? userLevelId : regionId);
 
     const academicYear = useAcademicSessions();
 
@@ -88,7 +90,7 @@ const FeesInvoices = () => {
     const [pageSize, setPageSize] = useState<number>(25)
     const [gradeId, setGradeId] = useState(grades[0]?.value || null);
     const [sessionId, setSessionId] = useState<string | number | null>(null);
-    const [campusId, setCampusId] = useState(loginInfo?.userLevel === 3 ? loginInfo?.userLevelId : null)
+    const [campusId, setCampusId] = useState<number | null>(userLevel === 3 ? userLevelId : null)
     const [admissionId, setAdmissionId] = useState(null)
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
@@ -127,7 +129,13 @@ const FeesInvoices = () => {
                 const filter: any = { pageNo, pageSize };
                 if (gradeId) filter.gradeId = gradeId;
                 if (sessionId) filter.sessionId = sessionId;
-                if (campusId) filter.campusId = campusId;
+                if (campusId && Number(campusId) > 0) {
+                    filter.campusId = Number(campusId);
+                } else if (userLevel === 2 && userLevelId) {
+                    filter.regionId = userLevelId;
+                } else if (userLevel === 1 && regionId && Number(regionId) > 0) {
+                    filter.regionId = Number(regionId);
+                }
                 if (admissionId) filter.admissionId = admissionId;
                 if (dateFrom) filter.dateFrom = dateFrom;
                 if (dateTo) filter.dateTo = dateTo;
@@ -156,6 +164,11 @@ const FeesInvoices = () => {
     }
 
     useEffect(() => {
+        if (userLevel === 2 && (!campusId || Number(campusId) <= 0)) {
+            dispatch(resetFeeInvoiceState());
+            return;
+        }
+
         const filter: any = {
             pageNo,
             pageSize: pageSize
@@ -171,14 +184,19 @@ const FeesInvoices = () => {
         // 3. Conditionally add your filters
         addIfValid('gradeId', gradeId);
         addIfValid('sessionId', sessionId);
-        addIfValid('campusId', campusId);
+
+        if (campusId && Number(campusId) > 0) {
+            filter.campusId = Number(campusId);
+        } else if (userLevel === 1 && regionId && Number(regionId) > 0) {
+            filter.regionId = Number(regionId);
+        }
+
         addIfValid('admissionId', admissionId);
         addIfValid('dateFrom', dateFrom);
         addIfValid('dateTo', dateTo);
         addIfValid('status', status);
-        console.log('campusId filter:', campusId)
         dispatch(GetFeeInvoices(filter as FeeInvoiceFilter))
-    }, [pageNo, gradeId, sessionId, campusId, admissionId, dateFrom, dateTo, status])
+    }, [dispatch, pageNo, pageSize, gradeId, sessionId, campusId, regionId, userLevel, userLevelId, admissionId, dateFrom, dateTo, status])
     const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
     const data = feesMasterData;
     const handleApplyClick = () => {

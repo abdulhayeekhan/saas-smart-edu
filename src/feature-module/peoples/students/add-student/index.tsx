@@ -197,18 +197,27 @@ const AddStudent = () => {
       'gradeId',
       'sectionId',
       'sessionId',
-      'fatherName',
+      'admissionDate',
+      'dateOfBirth',
+      'gender',
       'religionId',
-      'contactNumber',
-      'cnic',
       'motherTongeId',
+      'fatherName',
+      'contactNumber',
+      'email',
+      'cnic',
       'cCountryId',
       'cProvinceId',
       'cCityId',
       'cTown',
-      'gender',
       'cHouseNo',
-      'cStreetNo'
+      'cStreetNo',
+      'pCountryId',
+      'pProvinceId',
+      'pCityId',
+      'pHouseNo',
+      'pStreetNo',
+      'pTown'
     ];
 
     requiredFields.forEach(field => {
@@ -855,7 +864,7 @@ const AddStudent = () => {
                       {loginInfo?.userLevel === 1 && (
                         <div className="col-xxl col-xl-3 col-md-6">
                           <div className="mb-3">
-                            <label className="form-label">Region</label>
+                            <label className="form-label">Region <span className="text-danger">*</span></label>
                             <CommonSelect3
                               className="select"
                               options={regions}
@@ -868,12 +877,13 @@ const AddStudent = () => {
                       {(loginInfo?.userLevel === 1 || loginInfo?.userLevel === 2) && (
                         <div className="col-xxl col-xl-3 col-md-6">
                           <div className="mb-3">
-                            <label className="form-label">Campus</label>
+                            <label className="form-label">Campus <span className="text-danger">*</span></label>
                             <CommonSelect3
                               className="select"
                               options={campuses}
                               onChange={(option) => handleSelectUpdate('campusId', option)}
                               value={campuses.find(c => c.value === formData.campusId) || null}
+                              isDisabled={isEdit && loginInfo?.userLevel === 2}
                             />
                           </div>
                         </div>
@@ -881,13 +891,17 @@ const AddStudent = () => {
 
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">Academic Year</label>
-                          <div className={errors.gradeId ? "border border-danger rounded" : ""}>
+                          <label className="form-label">Academic Year <span className="text-danger">*</span></label>
+                          <div className={errors.sessionId ? "border border-danger rounded" : ""}>
                             <CommonSelect3
                               className="select"
                               options={academicYear}
-                              onChange={(option) => handleSelectUpdate('sectionId', option)}
-                              value={formData?.sessionId ? academicYear[academicYear.length - 1] : null}
+                              onChange={(option) => handleSelectUpdate('sessionId', option)}
+                              value={
+                                academicYear.find((a: any) => Number(a.value) === Number(formData?.sessionId)) ||
+                                (academicYear.length > 0 ? academicYear[academicYear.length - 1] : null)
+                              }
+                              isDisabled={isEdit}
                             />
                           </div>
                         </div>
@@ -904,7 +918,7 @@ const AddStudent = () => {
                       )}
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">Admission Date</label>
+                          <label className="form-label">Admission Date <span className="text-danger">*</span></label>
                           <div className="input-icon position-relative">
                             <DatePicker
                               className="form-control datetimepicker"
@@ -967,7 +981,7 @@ const AddStudent = () => {
                       </div>
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">First Name</label>
+                          <label className="form-label">First Name <span className="text-danger">*</span></label>
                           <input type="text"
                             value={formData.firstName || ""}
                             onChange={handleInputChange}
@@ -986,7 +1000,7 @@ const AddStudent = () => {
 
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">Last Name</label>
+                          <label className="form-label">Last Name <span className="text-danger">*</span></label>
                           <input type="text" className={`form-control ${errors.lastName ? 'is-invalid border-danger' : ''}`} onChange={handleInputChange} name="lastName" value={formData?.lastName || ''} />
                           {errors.lastName && <div className="invalid-feedback">Last name is required</div>}
                         </div>
@@ -999,7 +1013,7 @@ const AddStudent = () => {
                       </div>
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">Grade</label>
+                          <label className="form-label">Grade <span className="text-danger">*</span></label>
                           <div className={errors.gradeId ? "border border-danger rounded" : ""}>
                             <CommonSelect3
                               className="select"
@@ -1016,7 +1030,7 @@ const AddStudent = () => {
                       </div>
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">Section</label>
+                          <label className="form-label">Section <span className="text-danger">*</span></label>
                           <div className={errors.sectionId ? "border border-danger rounded" : ""}>
                             <CommonSelect3
                               className="select"
@@ -1030,7 +1044,7 @@ const AddStudent = () => {
                       </div>
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">Gender</label>
+                          <label className="form-label">Gender <span className="text-danger">*</span></label>
                           <div className={errors.gender ? "is-invalid-select" : ""}>
                             <CommonSelect3
                               className="select"
@@ -1044,7 +1058,7 @@ const AddStudent = () => {
                       </div>
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">Date of Birth</label>
+                          <label className="form-label">Date of Birth <span className="text-danger">*</span></label>
                           <div className="input-icon position-relative">
                             <DatePicker
                               className="form-control datetimepicker"
@@ -1069,29 +1083,9 @@ const AddStudent = () => {
                           </div>
                         </div>
                       </div>
-                      {/* <div className="col-xxl col-xl-3 col-md-6">
-                        <div className="mb-3">
-                          <label className="form-label">Blood Group</label>
-                          <CommonSelect
-                            className="select"
-                            options={bloodGroup}
-                            defaultValue={isEdit ? bloodGroup[0] : undefined}
-                          />
-                        </div>
-                      </div> */}
-                      {/* <div className="col-xxl col-xl-3 col-md-6">
-                        <div className="mb-3">
-                          <label className="form-label">House</label>
-                          <CommonSelect
-                            className="select"
-                            options={house}
-                            defaultValue={isEdit ? house[0] : undefined}
-                          />
-                        </div>
-                      </div> */}
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">Religion</label>
+                          <label className="form-label">Religion <span className="text-danger">*</span></label>
                           <CommonSelect3
                             className="select"
                             options={religions}
@@ -1102,45 +1096,9 @@ const AddStudent = () => {
                           />
                         </div>
                       </div>
-                      {/* <div className="col-xxl col-xl-3 col-md-6">
-                        <div className="mb-3">
-                          <label className="form-label">Category</label>
-                          <CommonSelect
-                            className="select"
-                            options={cast}
-                            defaultValue={isEdit ? cast[0] : undefined}
-                          />
-                        </div>
-                      </div> */}
-                      {/* <div className="col-xxl col-xl-3 col-md-6">
-                        <div className="mb-3">
-                          <label className="form-label">
-                            Primary Contact Number
-                          </label>
-                          <input type="text" className="form-control" name="contactNumber" onChange={handleInputChange} value={formData?.contactNumber || ''} />
-                        </div>
-                      </div> */}
-                      {/* <div className="col-xxl col-xl-3 col-md-6">
-                        <div className="mb-3">
-                          <label className="form-label">Email Address</label>
-                          <input type="email" className="form-control" name="email" onChange={handleInputChange} value={formData?.email || ''} />
-                        </div>
-                      </div> */}
-                      {/* <div className="col-xxl col-xl-3 col-md-6">
-                        <div className="mb-3">
-                          <label className="form-label">CNIC</label>
-                          <input type="text" className="form-control" name="cnic" onChange={handleInputChange} value={formData?.cnic || ''} />
-                        </div>
-                      </div> */}
-                      {/* <div className="col-xxl col-xl-3 col-md-6">
-                        <div className="mb-3">
-                          <label className="form-label">Caste</label>
-                          <input type="text" className="form-control" defaultValue={isEdit ? 'Catholic' : undefined} />
-                        </div>
-                      </div> */}
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
-                          <label className="form-label">Mother Tongue</label>
+                          <label className="form-label">Mother Tongue <span className="text-danger">*</span></label>
                           <CommonSelect3
                             className="select"
                             options={mothertongue}
@@ -1212,27 +1170,27 @@ const AddStudent = () => {
                         </div> */}
                         <div className="col-lg-3 col-md-6">
                           <div className="mb-3">
-                            <label className="form-label">Father Name</label>
+                            <label className="form-label">Father Name <span className="text-danger">*</span></label>
                             <input type="text" className={`form-control ${errors.fatherName ? 'is-invalid border-danger' : ''}`} name="fatherName" onChange={handleInputChange} value={formData?.fatherName || ''} />
                           </div>
                         </div>
                         <div className="col-lg-3 col-md-6">
                           <div className="mb-3">
                             <label className="form-label">
-                              Contact Number
+                              Contact Number <span className="text-danger">*</span>
                             </label>
                             <input type="text" className={`form-control ${errors.contactNumber ? 'is-invalid border-danger' : ''}`} name="contactNumber" onChange={handleInputChange} value={formData?.contactNumber || ''} />
                           </div>
                         </div>
                         <div className="col-lg-3 col-md-6">
                           <div className="mb-3">
-                            <label className="form-label">Email Address</label>
+                            <label className="form-label">Email Address <span className="text-danger">*</span></label>
                             <input type="email" className={`form-control ${errors.email ? 'is-invalid border-danger' : ''}`} name="email" onChange={handleInputChange} value={formData?.email || ''} />
                           </div>
                         </div>
                         <div className="col-lg-3 col-md-6">
                           <div className="mb-3">
-                            <label className="form-label">CNIC</label>
+                            <label className="form-label">CNIC <span className="text-danger">*</span></label>
                             <input type="text" className={`form-control ${errors.cnic ? 'is-invalid border-danger' : ''}`} name="cnic" onChange={handleInputChange} value={formData?.cnic || ''} />
                           </div>
                         </div>
@@ -1573,7 +1531,7 @@ const AddStudent = () => {
                     <div className="row">
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">Country</label>
+                          <label className="form-label">Country <span className="text-danger">*</span></label>
                           <CommonSelect3
                             className="select"
                             options={countries}
@@ -1584,7 +1542,7 @@ const AddStudent = () => {
                       </div>
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">State</label>
+                          <label className="form-label">State <span className="text-danger">*</span></label>
                           <CommonSelect3
                             className="select"
                             options={states}
@@ -1595,7 +1553,7 @@ const AddStudent = () => {
                       </div>
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">City</label>
+                          <label className="form-label">City <span className="text-danger">*</span></label>
                           <CommonSelect3
                             className="select"
                             options={cities}
@@ -1603,7 +1561,6 @@ const AddStudent = () => {
                               handleSelectChange('cCityId', option)
                             }
                             value={formData?.cCityId ? cities.find(c => c.value === formData.cCityId) : cities[0]}
-                          //value={form?.cCityId !== 0 ? cities.find(c => c.value === form.cCityId) : cities[0]}
                           />
                         </div>
                       </div>
@@ -1611,7 +1568,7 @@ const AddStudent = () => {
 
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">House No#</label>
+                          <label className="form-label">House No# <span className="text-danger">*</span></label>
                           <input
                             type="text"
                             name="cHouseNo"
@@ -1625,7 +1582,7 @@ const AddStudent = () => {
 
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">Street No#</label>
+                          <label className="form-label">Street No# <span className="text-danger">*</span></label>
                           <input
                             type="text" name="cStreetNo"
                             value={formData?.cStreetNo}
@@ -1638,7 +1595,7 @@ const AddStudent = () => {
                       </div>
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">Town</label>
+                          <label className="form-label">Town <span className="text-danger">*</span></label>
                           <input
                             type="text" name="cTown"
                             value={formData?.cTown}
@@ -1653,7 +1610,7 @@ const AddStudent = () => {
                 </div>
                 {/* /Current Address */}
 
-                {/* Current Address */}
+                {/* Permanent Address */}
                 <div className="card">
                   <div className="card-header bg-light">
                     <div className="d-flex align-items-center">
@@ -1667,7 +1624,7 @@ const AddStudent = () => {
                     <div className="row">
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">Country</label>
+                          <label className="form-label">Country <span className="text-danger">*</span></label>
                           <CommonSelect3
                             className="select"
                             options={countries}
@@ -1678,7 +1635,7 @@ const AddStudent = () => {
                       </div>
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">State</label>
+                          <label className="form-label">State <span className="text-danger">*</span></label>
                           <CommonSelect3
                             className="select"
                             options={states}
@@ -1689,14 +1646,13 @@ const AddStudent = () => {
                       </div>
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">City</label>
+                          <label className="form-label">City <span className="text-danger">*</span></label>
                           <CommonSelect3
                             className="select"
                             options={cities}
                             onChange={(option) =>
                               handleSelectChange('pCityId', option)
                             }
-                            //value={isEdit ? cities[0]}
                             value={formData?.pCityId !== 0 ? cities.find(c => c.value === formData.pCityId) : cities[0]}
                           />
                         </div>
@@ -1705,7 +1661,7 @@ const AddStudent = () => {
 
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">House No#</label>
+                          <label className="form-label">House No# <span className="text-danger">*</span></label>
                           <input
                             type="text"
                             name="pHouseNo"
@@ -1720,7 +1676,7 @@ const AddStudent = () => {
 
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">Street No#</label>
+                          <label className="form-label">Street No# <span className="text-danger">*</span></label>
                           <input
                             type="text"
                             name="pStreetNo"
@@ -1732,7 +1688,7 @@ const AddStudent = () => {
                       </div>
                       <div className="col-md-4">
                         <div className="mb-3">
-                          <label className="form-label">Town</label>
+                          <label className="form-label">Town <span className="text-danger">*</span></label>
                           <input
                             type="text" name="pTown"
                             value={formData?.pTown}

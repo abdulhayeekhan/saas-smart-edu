@@ -38,7 +38,9 @@ const StudentList = () => {
   const userInfoString = localStorage.getItem("userData");
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
   const loginInfo = userInfo?.data
-  const [regionId, setRegionId] = useState<number>(0);
+  const userLevel = Number(loginInfo?.userLevel || 0);
+  const userLevelId = Number(loginInfo?.userLevelId || 0);
+  const [regionId, setRegionId] = useState<number>(userLevel === 2 ? userLevelId : 0);
   const grades = useAcademicGrades();
 
   const regionsList = useRegionsList();
@@ -47,7 +49,7 @@ const StudentList = () => {
     { value: 'true', label: "Active" },
     { value: 'false', label: "Inactive" }
   ];
-  const campuses = useCampusesList(loginInfo?.userLevel === 2 ? loginInfo?.userLevelId : regionId);
+  const campuses = useCampusesList(userLevel === 2 ? userLevelId : regionId);
   const dispatch = useDispatch<AppDispatch>()
   const { data: datalist, totalCount, totalPages, currentPage, loading } = useSelector((state: RootState) => state.admissions);
 
@@ -57,20 +59,31 @@ const StudentList = () => {
   const [gradeId, setGradeId] = useState<number | null>(null)
   const [sectionId, setSectionId] = useState<number | null>(null)
   const [isEnabled, setIsEnabled] = useState<boolean>(true)
-  const [campusId, setCampusId] = useState(loginInfo?.userLevel === 3 ? loginInfo?.userLevelId : null)
+  const [campusId, setCampusId] = useState<number | null>(userLevel === 3 ? userLevelId : null)
   const sections = useSectionList(campusId);
   useEffect(() => {
-    const filter = {
+    if (userLevel === 2 && (!campusId || Number(campusId) <= 0)) {
+      dispatch(resetAdmissionState());
+      return;
+    }
+
+    const filter: AdmissionFilter = {
       pageNo,
       pageSize: pageSize,
       search: search,
       gradeId,
       sectionId,
-      campusId,
       isEnabled
     };
+
+    if (campusId && Number(campusId) > 0) {
+      filter.campusId = Number(campusId);
+    } else if (userLevel === 1 && regionId && Number(regionId) > 0) {
+      filter.regionId = Number(regionId);
+    }
+
     dispatch(GetAdmissions(filter));
-  }, [dispatch, pageNo, pageSize, search, gradeId, sectionId, campusId, isEnabled]);
+  }, [dispatch, pageNo, pageSize, search, gradeId, sectionId, campusId, isEnabled, regionId, userLevel, userLevelId]);
 
   useEffect(() => {
     return () => {
@@ -150,7 +163,7 @@ const StudentList = () => {
         return (
           <div className="d-flex align-items-center">
             <div className="ms-2">
-              <p className="text-dark mb-0">
+              <div className="text-dark mb-0">
                 <div className="d-flex align-items-center">
                   <Link to={`/student/student-details/${record.id}`}>
                     <ImageWithBasePath
@@ -171,7 +184,7 @@ const StudentList = () => {
                       <h6 className="mb-0">{fullName || "No Name"}</h6></Link>
                   </div>
                 </div>
-              </p>
+              </div>
             </div>
           </div>
         );
@@ -352,7 +365,16 @@ const StudentList = () => {
                 </div>
                 <TooltipOption 
                    onExportPDF={handleExportPDF} 
-                   onRefresh={() => dispatch(GetAdmissions({ pageNo, pageSize, search, gradeId, sectionId, campusId, isEnabled }))} 
+                   onRefresh={() => {
+                     if (userLevel === 2 && (!campusId || Number(campusId) <= 0)) return;
+                     const refreshFilter: AdmissionFilter = { pageNo, pageSize, search, gradeId, sectionId, isEnabled };
+                     if (campusId && Number(campusId) > 0) {
+                       refreshFilter.campusId = Number(campusId);
+                     } else if (userLevel === 1 && regionId && Number(regionId) > 0) {
+                       refreshFilter.regionId = Number(regionId);
+                     }
+                     dispatch(GetAdmissions(refreshFilter));
+                   }} 
                    onPrint={() => window.print()} 
                 />
                 <div className="dropdown mb-3 me-2">

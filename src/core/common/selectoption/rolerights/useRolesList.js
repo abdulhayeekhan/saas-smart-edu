@@ -2,8 +2,13 @@ import { useEffect, useState,useMemo, useContext, createContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { GetAllRoles } from '../../../../store/apps/roles';
 
+/**
+ * @param {number|string} [roleType]
+ * @returns {Array<{value: any, label: string}>}
+ */
 export const useRolesList = (roleType) => {
   const dispatch = useDispatch();
+  /** @type {[Array<{value: any, label: string}>, Function]} */
   const [options, setOptions] = useState([]);
 
   useEffect(() => {

@@ -38,13 +38,18 @@ const CommonSelect: React.FC<SelectProps> = ({ options, defaultValue, className 
   
   return (
     <Select
-     classNamePrefix="react-select"
+      classNamePrefix="react-select"
       className={className}
-      // styles={customStyles}
       options={options}
       value={selectedOption}
       onChange={handleChange}
       placeholder="Select"
+      menuPortalTarget={typeof document !== "undefined" ? document.body : undefined}
+      menuPosition="fixed"
+      styles={{
+        menuPortal: (base: any) => ({ ...base, zIndex: 99999 }),
+        menu: (base: any) => ({ ...base, zIndex: 99999, backgroundColor: "#ffffff" }),
+      }}
     />
   );
 };
