@@ -12,7 +12,7 @@ import useRegionsList from "../../core/common/selectoption/master/useRegions";
 import { all_routes } from "../router/all_routes";
 import TooltipOption from "../../core/common/tooltipOption";
 import { useDispatch, useSelector } from "react-redux";
-import { GetUsers, AddUser, UpdateUser, DecryptPassword } from '../../store/apps/account'
+import { GetUsers, AddUser, UpdateUser, DecryptPassword, ResetPassword } from '../../store/apps/account'
 import type { AppDispatch, RootState } from '../../store';
 import Swal from "sweetalert2";
 import CommonSelect2 from "../../core/common/commonSelect2";
@@ -124,9 +124,47 @@ const Manageusers = () => {
     contactNumber: '',
     isEnabled: true
   });
-  const [editConfirmPass, setEditConfirmPass] = useState('');
   const [editSelectedRegionId, setEditSelectedRegionId] = useState<number>(0);
   const [editSaveLoading, setEditSaveLoading] = useState(false);
+
+  // --- Password Update State & Handlers ---
+  const passwordCloseBtnRef = useRef<HTMLButtonElement>(null);
+  const [passwordUser, setPasswordUser] = useState<{ id: number; email: string; username: string } | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
+  const handleOpenPasswordModal = (record: User) => {
+    setPasswordUser({ id: record.id, email: record.email, username: record.username });
+    setNewPassword('');
+    setConfirmPassword('');
+    setPasswordLoading(false);
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordUser || !passwordUser.email) {
+      Swal.fire('Error', 'User email not found', 'error');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Swal.fire('Error', 'Passwords do not match', 'error');
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      const resultAction = await dispatch(ResetPassword({ email: passwordUser.email, newPassword }));
+      if (ResetPassword.fulfilled.match(resultAction)) {
+        passwordCloseBtnRef.current?.click();
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+    } catch (error) {
+      console.error("Error updating password:", error);
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
 
   const editRolesList = useRolesList(editUsersInfo?.userLevel);
   const effectiveEditRegionId = currentUserLevel === 2 ? currentUserLevelId : editSelectedRegionId;
@@ -184,12 +222,10 @@ const Manageusers = () => {
       username: record.username || '',
       firstname: record.firstname || '',
       lastname: record.lastname || '',
-      password: '',
       email: record.email || '',
       contactNumber: record.contactNumber || '',
       isEnabled: record.isEnabled ?? true
     });
-    setEditConfirmPass('');
     setEditSelectedRegionId(0);
   };
 
@@ -197,7 +233,15 @@ const Manageusers = () => {
     e.preventDefault();
     setEditSaveLoading(true);
     try {
-      const payload: any = {
+      const payload: {
+        id: number;
+        userLevel: number;
+        userLevelId: number;
+        roleId: number;
+        firstname: string;
+        lastname: string;
+        isEnabled: boolean;
+      } = {
         id: editUsersInfo.id,
         userLevel: editUsersInfo.userLevel,
         userLevelId:
@@ -205,17 +249,10 @@ const Manageusers = () => {
             ? currentUserLevelId
             : editUsersInfo.userLevelId,
         roleId: editUsersInfo.roleId,
-        username: editUsersInfo.username,
         firstname: editUsersInfo.firstname,
         lastname: editUsersInfo.lastname,
-        email: editUsersInfo.email,
-        contactNumber: editUsersInfo.contactNumber,
         isEnabled: editUsersInfo.isEnabled
       };
-
-      if (editUsersInfo.password && editUsersInfo.password.trim() !== '') {
-        payload.password = editUsersInfo.password;
-      }
 
       const resultAction = await dispatch(UpdateUser(payload));
       if (UpdateUser.fulfilled.match(resultAction)) {
@@ -446,6 +483,18 @@ const Manageusers = () => {
                   >
                     <i className="ti ti-edit-circle me-2" />
                     Edit
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="dropdown-item rounded-1"
+                    data-bs-toggle="modal"
+                    data-bs-target="#update_user_password"
+                    to="#"
+                    onClick={() => handleOpenPasswordModal(record)}
+                  >
+                    <i className="ti ti-key me-2" />
+                    Update Password
                   </Link>
                 </li>
                 <li>
@@ -841,7 +890,7 @@ const Manageusers = () => {
                     <div className="col-md-12">
                       <div className="mb-2">
                         <label className="form-label">User Name <span className="text-danger">*</span></label>
-                        <input type="text" name="username" value={editUsersInfo?.username} placeholder="Enter User Name" onChange={handleEditInputChange} className="form-control" />
+                        <input type="text" name="username" value={editUsersInfo?.username} placeholder="Enter User Name" onChange={handleEditInputChange} className="form-control" disabled />
                       </div>
                     </div>
                     <div className="col-md-6">
@@ -879,6 +928,7 @@ const Manageusers = () => {
                           options={filteredUserLevels}
                           onChange={(option) => handleEditUserLevel(option ? option.value : 0)}
                           value={filteredUserLevels.find(ul => Number(ul.value) === Number(editUsersInfo?.userLevel)) || null}
+                          isDisabled={currentUserLevel === 2}
                         />
                       </div>
                     </div>
@@ -941,19 +991,6 @@ const Manageusers = () => {
                       </>
                     )}
 
-                    <div className="col-md-6">
-                      <div className="mb-2">
-                        <label className="form-label">New Password (Optional)</label>
-                        <input type="password" name="password" value={editUsersInfo?.password || ''} onChange={handleEditInputChange} placeholder="Leave blank to keep current password" className="form-control" />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="mb-2">
-                        <label className="form-label">Confirm New Password</label>
-                        <input type="password" name="confirmPass" value={editConfirmPass} onChange={(e) => setEditConfirmPass(e.target.value)} placeholder="Confirm New Password" className="form-control" />
-                      </div>
-                    </div>
-
                     <div className="col-md-12">
                       <div className="mb-2">
                         <div className="d-flex align-items-center justify-content-between">
@@ -987,10 +1024,88 @@ const Manageusers = () => {
                   </Link>
                   <button
                     type="submit"
-                    disabled={editSaveLoading || Boolean(editUsersInfo?.password && editUsersInfo?.password !== editConfirmPass) || editUsersInfo?.username === '' || (editUsersInfo?.userLevel === 3 && !editUsersInfo?.userLevelId)}
+                    disabled={editSaveLoading || editUsersInfo?.username === '' || (editUsersInfo?.userLevel === 3 && !editUsersInfo?.userLevelId)}
                     className="btn btn-primary"
                   >
                     {editSaveLoading ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="update_user_password">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h4 className="modal-title">Update Password {passwordUser?.username ? `(${passwordUser.username})` : ''}</h4>
+                <button
+                  type="button"
+                  className="btn-close custom-btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                  ref={passwordCloseBtnRef}
+                >
+                  <i className="ti ti-x" />
+                </button>
+              </div>
+              <form onSubmit={handlePasswordSubmit}>
+                <div className="modal-body">
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="mb-2">
+                        <label className="form-label">
+                          New Password <span className="text-danger">*</span>
+                        </label>
+                        <input
+                          type="password"
+                          name="newPassword"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Enter New Password"
+                          className="form-control"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="mb-2">
+                        <label className="form-label">
+                          Confirm New Password <span className="text-danger">*</span>
+                        </label>
+                        <input
+                          type="password"
+                          name="confirmPassword"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Confirm New Password"
+                          className="form-control"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <Link
+                    to="#"
+                    className="btn btn-light me-2"
+                    data-bs-dismiss="modal"
+                  >
+                    Cancel
+                  </Link>
+                  <button
+                    type="submit"
+                    disabled={
+                      passwordLoading ||
+                      !newPassword ||
+                      !confirmPassword ||
+                      newPassword !== confirmPassword
+                    }
+                    className="btn btn-primary"
+                  >
+                    {passwordLoading ? 'Updating...' : 'Update Password'}
                   </button>
                 </div>
               </form>

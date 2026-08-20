@@ -250,6 +250,7 @@ export const all_routes = {
   studentFeeGenerate: "/fee-management-system/single-fee-generate/:id",
   feeInvoices: "/fee-management-system/fee-invoices",
   feeReceipt: "/fee-management-system/fee-receipt",
+  bulkFeeReceipt: "/fee-management-system/bulk-fee-receipt",
   bulkFeePrint: "/fee-management-system/bulk-fee-print",
   accountSetting: "/fee-management-system/account-setting",
   discountType: "/management/discount-type",

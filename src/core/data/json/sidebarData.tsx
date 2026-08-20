@@ -234,6 +234,13 @@ export const SidebarData = [
         link: routes.feeReceipt
       },
       {
+        label: "Bulk Fee Receipt",
+        icon: "ti ti-files",
+        submenu: false,
+        showSubRoute: false,
+        link: routes.bulkFeeReceipt
+      },
+      {
         label: "Security Account Setting",
         icon: "ti ti-settings",
         submenu: false,

@@ -162,6 +162,23 @@ export const GetTimetableByClass = createAsyncThunk<Timetable | null, { campusId
   }
 );
 
+export const normalizeTimetable = (timetable: any): Timetable | null => {
+  if (!timetable) return null;
+  let entries: TimetableEntry[] = [];
+  const rawEntries = timetable.entries;
+  if (Array.isArray(rawEntries)) {
+    entries = rawEntries;
+  } else if (rawEntries && Array.isArray(rawEntries.$values)) {
+    entries = rawEntries.$values;
+  } else if (rawEntries && typeof rawEntries === 'object') {
+    entries = Object.values(rawEntries).filter(Boolean) as TimetableEntry[];
+  }
+  return {
+    ...timetable,
+    entries
+  };
+};
+
 // Slice
 const classTimetableSlice = createSlice({
   name: 'classTimetable',
@@ -179,7 +196,9 @@ const classTimetableSlice = createSlice({
     });
     builder.addCase(GetAllTimetables.fulfilled, (state, action) => {
       state.loading = false;
-      state.data = action.payload.data;
+      state.data = Array.isArray(action.payload?.data)
+        ? (action.payload.data.map(normalizeTimetable).filter(Boolean) as Timetable[])
+        : [];
     });
     builder.addCase(GetAllTimetables.rejected, (state, action) => {
       state.loading = false;
@@ -193,7 +212,7 @@ const classTimetableSlice = createSlice({
     });
     builder.addCase(GetTimetableByClass.fulfilled, (state, action) => {
       state.loading = false;
-      state.selectedTimetable = action.payload;
+      state.selectedTimetable = normalizeTimetable(action.payload);
     });
     builder.addCase(GetTimetableByClass.rejected, (state, action) => {
       state.loading = false;
@@ -208,7 +227,7 @@ const classTimetableSlice = createSlice({
     });
     builder.addCase(GetTimetableById.fulfilled, (state, action) => {
       state.loading = false;
-      state.selectedTimetable = action.payload;
+      state.selectedTimetable = normalizeTimetable(action.payload);
     });
     builder.addCase(GetTimetableById.rejected, (state, action) => {
       state.loading = false;
@@ -221,7 +240,7 @@ const classTimetableSlice = createSlice({
     });
     builder.addCase(AddTimetable.fulfilled, (state, action) => {
       state.isActionLoading = false;
-      state.selectedTimetable = action.payload;
+      state.selectedTimetable = normalizeTimetable(action.payload);
     });
     builder.addCase(AddTimetable.rejected, (state) => {
       state.isActionLoading = false;
@@ -233,7 +252,7 @@ const classTimetableSlice = createSlice({
     });
     builder.addCase(UpdateTimetable.fulfilled, (state, action) => {
       state.isActionLoading = false;
-      state.selectedTimetable = action.payload;
+      state.selectedTimetable = normalizeTimetable(action.payload);
     });
     builder.addCase(UpdateTimetable.rejected, (state) => {
       state.isActionLoading = false;

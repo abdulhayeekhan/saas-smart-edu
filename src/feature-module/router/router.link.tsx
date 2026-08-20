@@ -294,6 +294,7 @@ import FeesInvoices from "../fee-management-system/fee-invoices";
 import BulkFeePrint from "../fee-management-system/bulk-fee-print";
 import CampusBank from "../management/campus-bank";
 import FeeReceipt from "../fee-management-system/fee-receipt";
+import BulkFeeReceipt from "../fee-management-system/bulk-fee-receipt";
 import DiscountTransactionSetting from "../acdemic-manager/discount-setting";
 import LedgerReports from "../accounts/reports/ledger-reports";
 import CollectionReport from "../accounts/reports/collection-report";
@@ -1149,6 +1150,10 @@ export const publicRoutes = [
   {
     path: routes.feeReceipt,
     element: <FeeReceipt />,
+  },
+  {
+    path: routes.bulkFeeReceipt,
+    element: <BulkFeeReceipt />,
   },
   {
     path: routes.bulkFeePrint,

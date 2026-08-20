@@ -137,8 +137,30 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             authConfig.meEndpoint,
             { userBody }
           )
-          .then(response => {
+          .then(async response => {
             setLoading(false)
+            let userDataObj = userInfo?.data;
+            if (userDataObj && Number(userDataObj?.userLevel) === 3 && userDataObj?.userLevelId && !userDataObj?.regionId) {
+              try {
+                const campusRes = await axios.get(
+                  `${baseURL}/api/campus/getcampusbyid?id=${userDataObj.userLevelId}`
+                );
+                const campusObj = campusRes?.data?.data || campusRes?.data;
+                if (campusObj && campusObj.regionId) {
+                  userDataObj.regionId = Number(campusObj.regionId);
+                  userDataObj.campusId = userDataObj.userLevelId;
+                  window.localStorage.setItem('userData', JSON.stringify(userInfo));
+
+                  const loginInfoStr = window.localStorage.getItem('loginInfo');
+                  const loginInfoObj = loginInfoStr ? JSON.parse(loginInfoStr) : {};
+                  loginInfoObj.regionId = Number(campusObj.regionId);
+                  loginInfoObj.campusId = userDataObj.userLevelId;
+                  window.localStorage.setItem('loginInfo', JSON.stringify(loginInfoObj));
+                }
+              } catch (e) {
+                console.error("Failed to fetch campus region on initAuth:", e);
+              }
+            }
             setUser({ ...response.data })
           })
           .catch(() => {
@@ -191,15 +213,33 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         return;
       }
 
-      if (params.rememberMe) {
-        window.localStorage.setItem(authConfig.storageTokenKeyName, userInfo.accessToken || '');
-        window.localStorage.setItem('userData', JSON.stringify(resData));
+      let userCampusId = userInfo?.userLevelId;
+      let regionId = userInfo?.regionId || 0;
+
+      // If userLevel is 3 (Campus level user), userLevelId is campusId.
+      // Get regionId from campus table information.
+      if (Number(userInfo?.userLevel) === 3 && userInfo?.userLevelId) {
+        try {
+          const campusRes = await axios.get(
+            `${baseURL}/api/campus/getcampusbyid?id=${userInfo.userLevelId}`
+          );
+          const campusObj = campusRes?.data?.data || campusRes?.data;
+          if (campusObj && campusObj.regionId) {
+            regionId = Number(campusObj.regionId);
+            userInfo.regionId = regionId;
+            userInfo.campusId = userInfo.userLevelId;
+          }
+        } catch (e) {
+          console.error("Failed to fetch campus details for regionId:", e);
+        }
       }
+
+      window.localStorage.setItem(authConfig.storageTokenKeyName, userInfo.accessToken || '');
+      window.localStorage.setItem('userData', JSON.stringify(resData));
 
       setUser({ ...resData });
       resetLogoutTimer();
 
-      let userCampusId = userInfo?.userLevelId;
       let userDP = '/images/avatars/1.png';
 
       const roleId = userInfo?.roleId;
@@ -215,6 +255,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
       const newBody = {
         campusId: userCampusId,
+        regionId: regionId,
         userId: userInfo?.id,
         userLevel: userInfo?.userLevel,
         userLevelId: userInfo?.userLevelId,
@@ -224,9 +265,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         userDP
       };
 
-      if (params.rememberMe) {
-        window.localStorage.setItem('loginInfo', JSON.stringify(newBody));
-      }
+      window.localStorage.setItem('loginInfo', JSON.stringify(newBody));
 
       const from = (location.state as any)?.from?.pathname || '/';
       toast.success('Signed in successfully');

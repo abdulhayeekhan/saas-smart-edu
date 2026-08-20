@@ -98,6 +98,13 @@ export interface ManualReceiptPayload {
     }[];
 }
 
+export interface BulkReceiptPayload {
+    campusId: number;
+    gradeId: number;
+    bankID: number;
+    invoiceIds: number[];
+}
+
 export interface FeeInvoiceState {
     data: FeeInvoice[];
     totalCount: number;
@@ -264,6 +271,26 @@ export const DeleteReceipts = createAsyncThunk<any, { campusId: number | string;
                 toast.error(data.message || 'Failed to delete fee receipt');
                 return rejectWithValue(data.message || 'Failed to delete fee receipt');
             }
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || error.message || 'Network error';
+            toast.error(errorMessage);
+            return rejectWithValue(errorMessage);
+        }
+    }
+);
+
+// 8. Bulk Fee Receipt
+export const BulkFeeReceipt = createAsyncThunk<any, BulkReceiptPayload>(
+    'feeInvoice/bulkReceipt',
+    async (payload, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.post(`${baseURL}/api/FeeInvoice/BulkReceipt`, payload);
+            if (data.status) {
+                toast.success(data.message || 'Bulk fee receipts processed successfully!');
+                return data.data;
+            }
+            toast.error(data.message || 'Failed to process bulk fee receipts');
+            return rejectWithValue(data.message);
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || error.message || 'Network error';
             toast.error(errorMessage);

@@ -1,5 +1,5 @@
 import { DatePicker, Spin } from "antd";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { classSection } from "../../../core/data/json/class-section";
 import Table from "../../../core/common/dataTable2/index";
 import {
@@ -253,21 +253,27 @@ const ClassSessions = () => {
   const userLevel = loginInfo?.userLevel || userData?.data?.userLevel;
   const userLevelId = loginInfo?.userLevelId || userData?.data?.userLevelId;
 
-  // userLevel === 2 => regionId is userLevelId
-  // userLevel === 1 => super admin
-  const userRegionId = userLevel === 2 ? userLevelId : (loginInfo?.regionId || userData?.data?.regionId || userData?.data?.tblCampus?.regionId);
+  const userRegionId = userLevel === 2 ? userLevelId : (loginInfo?.regionId || userData?.data?.regionId || userData?.data?.tblCampus?.regionId || userData?.data?.campus?.regionId);
 
-  const [selectedFilterRegion, setSelectedFilterRegion] = useState<number | null>(userLevel === 2 ? userLevelId : null);
+  const [selectedFilterRegion, setSelectedFilterRegion] = useState<number | null>(userLevel === 2 ? userLevelId : (userLevel === 3 ? Number(userRegionId || 0) : null));
+
+  const effectiveRegionId = (userLevel === 2 || userLevel === 3) ? Number(userRegionId || 0) : selectedFilterRegion;
 
   useEffect(() => {
-    if (userLevel === 2) {
-      dispatch(GetSessions(userLevelId));
-    } else if (selectedFilterRegion) {
-      dispatch(GetSessions(selectedFilterRegion));
+    if (effectiveRegionId) {
+      dispatch(GetSessions(effectiveRegionId));
     } else {
       dispatch(GetSessions());
     }
-  }, [dispatch, userLevel, userLevelId, selectedFilterRegion]);
+  }, [dispatch, effectiveRegionId]);
+
+  const filteredSessions = useMemo(() => {
+    if (!data || !Array.isArray(data)) return [];
+    if (effectiveRegionId) {
+      return data.filter((item: any) => Number(item.regionId) === Number(effectiveRegionId));
+    }
+    return data;
+  }, [data, effectiveRegionId]);
   const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
   const handleApplyClick = () => {
     if (dropdownMenuRef.current) {
@@ -438,7 +444,7 @@ const ClassSessions = () => {
               </div>
               <div className="card-body p-0 py-3">
                 {/* Guardians List */}
-                <Table columns={columns} dataSource={data} Selection={true} loading={loading} />
+                <Table columns={columns} dataSource={filteredSessions} Selection={true} loading={loading} />
                 {/* /Guardians List */}
               </div>
             </div>

@@ -90,11 +90,20 @@ const ClassTimetable = () => {
     setSectionId(0);
   };
 
+  const getEntriesArray = (entries: any): TimetableEntry[] => {
+    if (!entries) return [];
+    if (Array.isArray(entries)) return entries;
+    if (Array.isArray(entries.$values)) return entries.$values;
+    if (typeof entries === 'object') return Object.values(entries).filter(Boolean) as TimetableEntry[];
+    return [];
+  };
+
   // Open Add/Edit Modal
   const openModal = () => {
-    if (selectedTimetable && selectedTimetable.entries) {
+    const entriesList = getEntriesArray(selectedTimetable?.entries);
+    if (entriesList.length > 0) {
       const grouped = DAYS.reduce((acc, day) => ({ ...acc, [day]: [] }), {} as Record<string, Partial<TimetableEntry>[]>);
-      selectedTimetable.entries.forEach(entry => {
+      entriesList.forEach(entry => {
         if (grouped[entry.dayOfWeek]) {
           grouped[entry.dayOfWeek].push(entry);
         }
@@ -232,13 +241,12 @@ const ClassTimetable = () => {
 
   // Render Display
   const groupedEntries = DAYS.reduce((acc, day) => ({ ...acc, [day]: [] }), {} as Record<string, TimetableEntry[]>);
-  if (selectedTimetable?.entries) {
-    selectedTimetable.entries.forEach(e => {
-      if (groupedEntries[e.dayOfWeek]) {
-        groupedEntries[e.dayOfWeek].push(e);
-      }
-    });
-  }
+  const entriesList = getEntriesArray(selectedTimetable?.entries);
+  entriesList.forEach(e => {
+    if (groupedEntries[e.dayOfWeek]) {
+      groupedEntries[e.dayOfWeek].push(e);
+    }
+  });
 
   // Define Colors for Periods dynamically
   const colors = ["danger", "primary", "success", "pending", "info", "warning"];

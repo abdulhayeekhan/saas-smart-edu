@@ -51,9 +51,14 @@ export const useAcademicSessions = (regionId) => {
   return useMemo(() => {
     if (!data || !Array.isArray(data)) return [{ value: "", label: "SELECT SESSION" }];
 
+    let filteredData = data;
+    if (activeRegionId) {
+      filteredData = data.filter((item) => Number(item.regionId) === Number(activeRegionId));
+    }
+
     const seen = new Set();
     const unique = [];
-    for (const item of data) {
+    for (const item of filteredData) {
       const key = item.id ?? item.name;
       if (!seen.has(key)) {
         seen.add(key);
@@ -72,5 +77,5 @@ export const useAcademicSessions = (regionId) => {
       { value: "", label: "SELECT SESSION" },
       ...formattedSessions
     ];
-  }, [data]);
+  }, [data, activeRegionId]);
 };

@@ -28,6 +28,8 @@ import {
 import useRegionsList from "../../../core/common/selectoption/master/useRegions";
 import { useCampusesList } from "../../../core/common/selectoption/master/useCampusesList";
 import { useAcademicGrades } from "../../../core/common/selectoption/academic/useAcademicGrades";
+import { useSectionList } from "../../../core/common/selectoption/academic/useSections";
+import { useAdmissions } from "../../../core/common/selectoption/academic/useAdmissions";
 import { useCities } from "../../../core/common/selectoption/address/useCities";
 import { TagsInput } from "react-tag-input-component";
 import CommonSelect from "../../../core/common/commonSelect";
@@ -156,6 +158,15 @@ const FeeReceipt = () => {
     }, [campusId, dispatch]);
 
 
+    const [selectedSectionId, setSelectedSectionId] = useState<number>(0);
+    const [selectedAdmissionId, setSelectedAdmissionId] = useState<number>(0);
+
+    const sectionOptions = useSectionList(campusId);
+    const { studentOptions = [] } = useAdmissions({
+        externalCampusId: campusId,
+        externalSectionId: selectedSectionId
+    }) as { studentOptions: any[]; loading: boolean; setPageNo: any };
+
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [searchInvoice, setSearchInvoice] = useState<SearchInvoice>({
         invoiceNumber: location.state?.invoiceNumber || 0,
@@ -202,10 +213,6 @@ const FeeReceipt = () => {
         receipts: []
     });
 
-
-    // useEffect(() => {
-    //     dispatch(GetFeeInvoices(formData as FeeInvoiceFilter))
-    // }, [dispatch, formData])
     const handleChange = (name: keyof SearchInvoice, value: any) => {
         setSearchInvoice((prev) => ({
             ...prev,
@@ -213,70 +220,117 @@ const FeeReceipt = () => {
         }));
     };
 
-    // 3. Update handleSelectCampus to also update formData
     const handleSelectCampus = (name: string, option: any) => {
         const selectedId = option?.value ?? 0;
         setCampusId(selectedId);
+        setSelectedSectionId(0);
+        setSelectedAdmissionId(0);
         setSearchInvoice(prev => ({
             ...prev,
             campusId: selectedId
         }));
     };
 
+    const [searching, setSearching] = useState(false);
 
-    const [searching, setSearching] = useState(false)
-    const handleSearchInvoiceData = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setSearching(true)
+    const populateInvoiceData = async (payload: any) => {
+        if (!payload) return;
+        const mappedDetails = payload.details ? payload.details.map((item: any) => ({
+            id: item.id,
+            feeTypeId: item.feeTypeId,
+            month: item.invoiceMonth,
+            amountReceived: item.remainingAmount
+        })) : [];
+
+        setSearchInvoice((prevState) => ({
+            ...prevState,
+            invoiceNumber: payload.invoiceNumber,
+            campusId: payload.campusId || campusId,
+            detail: mappedDetails
+        }));
+
         try {
-            const data: any = await dispatch(GetInvoiceByNumber(searchInvoice))
+            const depData: any = await axios.get(`${baseURL}/api/SecurityDeposit/GetDepositDetail/${payload.admissionId}`);
+            if (depData.data?.status && depData.data?.data) {
+                setDepositDetail(depData.data.data);
+                setSecurityAmountReceived(depData.data.data.amount);
+            } else {
+                setDepositDetail(null);
+                setSecurityAmountReceived(0);
+            }
+        } catch (err) {
+            console.error("Error fetching deposit:", err);
+            setDepositDetail(null);
+            setSecurityAmountReceived(0);
+        }
+
+        setFormData(payload);
+    };
+
+    const handleSelectStudent = async (admissionId: number) => {
+        setSelectedAdmissionId(admissionId);
+        if (!admissionId) return;
+
+        setSearching(true);
+        try {
+            const filter: FeeInvoiceFilter = {
+                pageNo: 1,
+                pageSize: 1,
+                admissionId: admissionId,
+                campusId: campusId || undefined
+            };
+            const resultAction: any = await dispatch(GetFeeInvoices(filter));
+            const invoices = resultAction?.payload?.data;
+
+            if (invoices && Array.isArray(invoices) && invoices.length > 0) {
+                const lastInvoice = invoices[0];
+                const fullInvoiceData: any = await dispatch(
+                    GetInvoiceByNumber({
+                        invoiceNumber: lastInvoice.invoiceNumber,
+                        campusId: lastInvoice.campusId || campusId
+                    })
+                );
+                const payload = fullInvoiceData?.payload;
+                if (payload) {
+                    await populateInvoiceData(payload);
+                    toast.success(`Loaded last fee invoice (${payload.invoiceNumber}) for student.`);
+                } else {
+                    toast.error("Could not fetch details for student's last invoice.");
+                }
+            } else {
+                toast.error("No fee invoices found for the selected student.");
+                handleCancel();
+            }
+        } catch (error) {
+            console.error("Error fetching last invoice for student:", error);
+            toast.error("Error fetching student invoice.");
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const handleSearchInvoiceData = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchInvoice.invoiceNumber) {
+            toast.error("Please enter a Voucher Number or select a student.");
+            return;
+        }
+        setSearching(true);
+        try {
+            const data: any = await dispatch(GetInvoiceByNumber(searchInvoice));
             const payload = data?.payload;
             if (payload) {
-                // 1. Map the API 'details' to your state's 'detail' format (including unique detail id)
-                const mappedDetails = payload.details.map((item: any) => ({
-                    id: item.id,
-                    feeTypeId: item.feeTypeId,
-                    month: item.invoiceMonth,
-                    amountReceived: item.remainingAmount // Mapping remaining to received as requested
-                }));
-
-                // 2. Update the searchInvoice state
-                setSearchInvoice((prevState) => ({
-                    ...prevState,
-                    invoiceNumber: payload.invoiceNumber,
-                    detail: mappedDetails
-                }));
-
-                // Fetch Security Deposit
-                try {
-                    const depData: any = await axios.get(`${baseURL}/api/SecurityDeposit/GetDepositDetail/${payload.admissionId}`);
-                    if (depData.data.status && depData.data.data) {
-                        setDepositDetail(depData.data.data);
-                        setSecurityAmountReceived(depData.data.data.amount); // Default to full amount
-                    } else {
-                        setDepositDetail(null);
-                        setSecurityAmountReceived(0);
-                    }
-                } catch (err) {
-                    console.error("Error fetching deposit:", err);
-                    setDepositDetail(null);
-                    setSecurityAmountReceived(0);
-                }
-
-                // If you still need to set the general form data
-                setFormData(payload);
-                setSearching(false);
+                await populateInvoiceData(payload);
             } else {
-                setSearching(false)
+                toast.error("Invoice not found. Please check the voucher number.");
             }
         } catch (error) {
             toast.error("Failed to fetch invoice data. Please check the voucher number and try again.");
             console.error(error);
-            setSearching(false)
         } finally {
-            setSearching(false)
+            setSearching(false);
         }
-    }
+    };
 
     useEffect(() => {
         if (location.state?.invoiceNumber) {
@@ -432,6 +486,8 @@ const FeeReceipt = () => {
     };
 
     const handleCancel = () => {
+        setSelectedSectionId(0);
+        setSelectedAdmissionId(0);
         setSearchInvoice({
             invoiceNumber: 0,
             campusId: campusId,
@@ -485,7 +541,7 @@ const FeeReceipt = () => {
                 {/* Page Header */}
                 <div className="d-md-flex d-block align-items-center justify-content-between mb-3">
                     <div className="my-auto mb-2">
-                        <h3 className="mb-1">Add Fee Receipt (Single)</h3>
+                        <h3 className="mb-1">Fee Receipt Management</h3>
                         <nav>
                             <ol className="breadcrumb mb-0">
                                 <li className="breadcrumb-item">
@@ -500,6 +556,16 @@ const FeeReceipt = () => {
                             </ol>
                         </nav>
                     </div>
+
+                    {/* Navigation Tabs */}
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                        <Link to={routes.feeReceipt} className="btn btn-primary">
+                            <i className="ti ti-file-invoice me-1" /> Single Fee Receipt
+                        </Link>
+                        <Link to={routes.bulkFeeReceipt} className="btn btn-outline-primary">
+                            <i className="ti ti-files me-1" /> Bulk Fee Receipt
+                        </Link>
+                    </div>
                 </div>
 
 
@@ -511,7 +577,7 @@ const FeeReceipt = () => {
 
                                     <div className="row">
                                         {loginInfo?.userLevel === 1 && (
-                                            <div className="col-md-6 mb-3">
+                                            <div className="col-md-3 mb-3">
                                                 <div className="mb-3">
                                                     <label className="form-label">Region</label>
                                                     <CommonSelect3
@@ -524,7 +590,7 @@ const FeeReceipt = () => {
                                             </div>
                                         )}
                                         {(loginInfo?.userLevel === 1 || loginInfo?.userLevel === 2) && (
-                                            <div className="col-md-6 mb-3">
+                                            <div className="col-md-3 mb-3">
                                                 <div className="mb-3">
                                                     <label className="form-label">Campus</label>
                                                     <CommonSelect3
@@ -539,7 +605,36 @@ const FeeReceipt = () => {
                                                 </div>
                                             </div>
                                         )}
-                                        <div className="col-md-6 mb-3">
+                                        <div className="col-md-3 mb-3">
+                                            <div className="mb-3">
+                                                <label className="form-label">Section</label>
+                                                <CommonSelect3
+                                                    className="select"
+                                                    options={sectionOptions}
+                                                    onChange={(option) => {
+                                                        const sId = Number(option?.value || 0);
+                                                        setSelectedSectionId(sId);
+                                                        setSelectedAdmissionId(0);
+                                                    }}
+                                                    value={selectedSectionId ? sectionOptions.find(s => Number(s.value) === selectedSectionId) || null : sectionOptions[0]}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-3 mb-3">
+                                            <div className="mb-3">
+                                                <label className="form-label">Student (Admission)</label>
+                                                <CommonSelect3
+                                                    className="select"
+                                                    options={studentOptions}
+                                                    onChange={(option) => {
+                                                        const aId = Number(option?.value || 0);
+                                                        handleSelectStudent(aId);
+                                                    }}
+                                                    value={selectedAdmissionId ? studentOptions.find(s => Number(s.value) === selectedAdmissionId) || null : studentOptions[0]}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-3 mb-3">
                                             <div className="mb-3">
                                                 <label className="form-label">Voucher Number</label>
                                                 <input type="text"
@@ -547,22 +642,21 @@ const FeeReceipt = () => {
                                                     name="invoiceNumber"
                                                     onChange={handleSearchInvoice}
                                                     value={searchInvoice.invoiceNumber || ''}
-
+                                                    placeholder="Enter Voucher Number"
                                                 />
-
                                             </div>
                                         </div>
 
-                                        <div className="col-md-6 mb-3 mt-4">
+                                        <div className="col-md-3 mb-3 mt-4">
                                             <button
                                                 type="submit"
                                                 className="btn btn-primary mt-1"
                                                 disabled={searching}
                                             >
                                                 {searching ? (
-                                                    <><span className="spinner-border spinner-border-sm me-2" /> Search...</>
+                                                    <><span className="spinner-border spinner-border-sm me-2" /> Searching...</>
                                                 ) : (
-                                                    'Search Invoices'
+                                                    'Fetch Invoice'
                                                 )}
                                             </button>
                                         </div>
