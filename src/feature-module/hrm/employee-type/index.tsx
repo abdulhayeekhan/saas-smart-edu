@@ -29,9 +29,31 @@ const EmployeeType = () => {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [filterName, setFilterName] = useState('');
 
+  const getNextSortOrder = (list: any) => {
+    if (!Array.isArray(list) || list.length === 0) return 1;
+    const maxOrder = Math.max(...list.map((d: any) => Number(d.sortOrder) || 0), 0);
+    return maxOrder + 1;
+  };
+
+  const handleOpenAddModal = () => {
+    setAddForm({
+      name: '',
+      sortOrder: getNextSortOrder(data)
+    });
+  };
+
   useEffect(() => {
     dispatch(GetAllEmployeeType({ pageNo: 1, pageSize: 100, search: "" }));
   }, [dispatch]);
+
+  useEffect(() => {
+    if (Array.isArray(data) && data.length > 0) {
+      setAddForm(prev => ({
+        ...prev,
+        sortOrder: prev.sortOrder === 0 && !prev.name ? getNextSortOrder(data) : prev.sortOrder
+      }));
+    }
+  }, [data]);
 
   const handleApplyClick = () => {
     if (dropdownMenuRef.current) {
@@ -45,7 +67,7 @@ const EmployeeType = () => {
       if (!res.error) {
         setAddForm({
           name: '',
-          sortOrder: 0
+          sortOrder: getNextSortOrder(data) + 1
         });
         document.getElementById('close-add-modal')?.click();
       }
@@ -175,6 +197,7 @@ const EmployeeType = () => {
                     className="btn btn-primary d-flex align-items-center"
                     data-bs-toggle="modal"
                     data-bs-target="#add_employee_type"
+                    onClick={handleOpenAddModal}
                   >
                     <i className="ti ti-square-rounded-plus me-2" />
                     Add Employee Type

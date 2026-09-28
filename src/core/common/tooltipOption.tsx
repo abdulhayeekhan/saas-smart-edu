@@ -1,13 +1,15 @@
 import React from "react";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Link } from "react-router-dom";
-interface TooltipOptionProps {
+export interface TooltipOptionProps {
   onExportPDF?: () => void;
+  onExportExcel?: () => void;
   onPrint?: () => void;
   onRefresh?: () => void;
+  [key: string]: any;
 }
 
-const TooltipOption = ({ onExportPDF, onPrint, onRefresh }: TooltipOptionProps) => {
+const TooltipOption = ({ onExportPDF, onExportExcel, onPrint, onRefresh }: TooltipOptionProps) => {
   return (
     <>
       <div className="pe-1 mb-2">
@@ -51,7 +53,7 @@ const TooltipOption = ({ onExportPDF, onPrint, onRefresh }: TooltipOptionProps) 
             </Link>
           </li>
           <li>
-            <Link to="#" className="dropdown-item rounded-1">
+            <Link to="#" className="dropdown-item rounded-1" onClick={(e) => { e.preventDefault(); onExportExcel?.(); }}>
               <i className="ti ti-file-type-xls me-1" />
               Export as Excel{" "}
             </Link>

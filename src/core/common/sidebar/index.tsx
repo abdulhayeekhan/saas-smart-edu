@@ -4,7 +4,7 @@ import Scrollbars from "react-custom-scrollbars-2";
 import { SidebarData } from "../../data/json/sidebarData";
 import ImageWithBasePath from "../imageWithBasePath";
 import "../../../style/icon/tabler-icons/webfont/tabler-icons.css";
-import { setExpandMenu } from "../../data/redux/sidebarSlice";
+import { setExpandMenu, setSidebarLoaded } from "../../data/redux/sidebarSlice";
 import { useDispatch } from "react-redux";
 import {
   resetAllMode,
@@ -22,6 +22,8 @@ interface SidebarItem {
   submenu?: boolean;
   submenuItems?: SidebarItem[];
   moduleName?: string;   // this is needed for role-based filtering
+  moduleNames?: string[];// for one entry fronting several modules — any match keeps it
+  superAdminOnly?: boolean;
   [key: string]: any;    // keep it flexible for other props you already have
 }
 
@@ -38,35 +40,11 @@ interface RoleRight {
 
 const Sidebar = () => {
   const Location = useLocation();
+  const dispatch = useDispatch();
   const [permissions, setPermissions] = useState<any[]>([]);
   const [filteredSidebar, setFilteredSidebar] = useState<any[]>([]);
   const [roleRights, setRoleRights] = useState<any[]>([]);
 
-
-  const stripPlural = (str: string) => {
-    let s = str.trim().toLowerCase();
-    if (s.endsWith('ies')) return s.slice(0, -3) + 'y';
-    if (s.endsWith('s') && !s.endsWith('ss')) return s.slice(0, -1);
-    return s;
-  };
-
-  const matchModuleName = (roleModuleName: string, itemLabel: string, explicitModuleName?: string): boolean => {
-    const rName = roleModuleName.trim().toLowerCase();
-    const itemKey = (explicitModuleName || itemLabel).trim().toLowerCase();
-
-    // Exact match
-    if (rName === itemKey) return true;
-
-    // Singular / Plural match (e.g. "admissions" vs "admission", "inquiries" vs "inquiry")
-    if (stripPlural(rName) === stripPlural(itemKey)) return true;
-
-    // Standardized explicit alias mappings
-    if ((rName === 'dashboard' || rName === 'admin dashboard') && (itemKey === 'admin dashboard' || itemKey === 'dashboard')) return true;
-    if ((rName === 'class grade' || rName === 'grades') && (itemKey === 'grades' || itemKey === 'class grade')) return true;
-    if ((rName === 'student card' || rName === 'student cards') && (itemKey === 'student card' || itemKey === 'student cards')) return true;
-
-    return false;
-  };
 
   const filterSidebarData = (
     sidebarData: SidebarItem[],
@@ -74,25 +52,39 @@ const Sidebar = () => {
   ): SidebarItem[] => {
     return sidebarData
       .map((item): SidebarItem | null => {
+
+        const loginInfo = JSON.parse(localStorage?.getItem("loginInfo") || "{}");
+        const currentRoleId = loginInfo?.roleId;
+
+        if (item.superAdminOnly && currentRoleId !== 1) {
+          return null;
+        }
+
         const filteredSubmenu = item.submenuItems
           ? filterSidebarData(item.submenuItems, roleRights)
           : [];
 
-        // If sub-items survive after filtering, retain the parent item with filtered sub-items
+        // Case 1: If children survive → keep parent
         if (filteredSubmenu.length > 0) {
           return { ...item, submenuItems: filteredSubmenu };
         }
 
-        // If the item itself has children in original definition but none survived, discard this parent
-        if (item.submenuItems && item.submenuItems.length > 0) {
-          return null;
-        }
+        const matchesRight = (candidate: string) => {
+          const key = candidate.trim().toLowerCase();
+          if (!key) return false;
 
-        // Leaf menu item: check against role rights
-        const hasViewRight = roleRights.some((r) => {
-          if (!r.moduleName || !r.viewRight) return false;
-          return matchModuleName(r.moduleName, item.label, item.moduleName);
-        });
+          return roleRights.some((r) => {
+            if (!r.moduleName) return false;
+            const rName = r.moduleName.trim().toLowerCase();
+            return (rName === key || rName.includes(key) || key.includes(rName)) && r.viewRight;
+          });
+        };
+
+        // 🔑 Use moduleNames, else moduleName, else label for matching. A single entry that
+        // fronts several screens (Reports) lists them all and survives if any one is allowed —
+        // the same way a parent used to survive when any of its children did.
+        const keys = item.moduleNames ?? [item.moduleName ?? item.label ?? ""];
+        const hasViewRight = keys.some(matchesRight);
 
         if (hasViewRight) {
           return { ...item, submenuItems: [] };
@@ -108,7 +100,10 @@ const Sidebar = () => {
   let roleId = loginInfo?.roleId;
 
   useEffect(() => {
-    if (!roleId) return;
+    if (!roleId) {
+      dispatch(setSidebarLoaded(true));
+      return;
+    }
 
     const getPermissionFunction = async () => {
       try {
@@ -119,17 +114,31 @@ const Sidebar = () => {
         localStorage.setItem("roleRights", JSON.stringify(fetchedRights));
         
         setRoleRights(fetchedRights);
-        const filtered = await filterSidebarData(SidebarData, fetchedRights);
+        const filtered = filterSidebarData(SidebarData, fetchedRights);
 
         setFilteredSidebar(filtered);
       } catch (err) {
         console.error("Error fetching permissions", err);
-        setPermissions([]);
+        const cached = localStorage.getItem("roleRights");
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            setRoleRights(parsed);
+            const filtered = filterSidebarData(SidebarData, parsed);
+            setFilteredSidebar(filtered);
+          } catch {
+            setPermissions([]);
+          }
+        } else {
+          setPermissions([]);
+        }
+      } finally {
+        dispatch(setSidebarLoaded(true));
       }
     };
 
     getPermissionFunction();
-  }, []);
+  }, [roleId, dispatch]);
 
 
   const [subOpen, setSubopen] = useState<any>("");
@@ -180,7 +189,6 @@ const Sidebar = () => {
     }
   };
   const location = useLocation();
-  const dispatch = useDispatch();
   const previousLocation = usePreviousRoute();
 
   useEffect(() => {

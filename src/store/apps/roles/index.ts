@@ -96,7 +96,7 @@ export const updateRole = createAsyncThunk<Role | null, Partial<Role>>(
   'updateRole',
   async (roleData, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${baseURL}/api/Role/UpdateRole/</Role>`, roleData)
+      const response = await axios.put(`${baseURL}/api/Role/UpdateRole`, roleData)
       if (response.data.status === true) {
         toast.success('Role Successfully Updated')
         return response.data.data as Role

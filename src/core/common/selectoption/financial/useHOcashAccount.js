@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { GetChildAccount } from "../../../../store/apps/ho-coa";
+import { CASH_ACCOUNT_HEAD_ID } from "../../../../environment";
 
 export const useHOcashAccount = (campusId) => {
   const dispatch = useDispatch();
@@ -17,7 +18,7 @@ export const useHOcashAccount = (campusId) => {
         const finalCampusId = campusId ?? 0;
 
         const data = await dispatch(
-          GetChildAccount({ id: 88, campusId: finalCampusId })
+          GetChildAccount({ id: CASH_ACCOUNT_HEAD_ID, campusId: finalCampusId })
         ).unwrap(); // prevents stale data on failure
 
         const mappedData = (data ?? []).map(item => ({

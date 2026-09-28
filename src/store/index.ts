@@ -48,6 +48,12 @@ import FinancialReportReducer from './apps/financial-report';
 import ClassTeacherReducer from './apps/class-teacher';
 import NotificationConfigReducer from './apps/notification-configuration';
 import ClassTimetableReducer from './apps/class-timetable';
+import AttendanceReducer from './apps/attendance';
+import AllowanceTypeReducer from './apps/allowance-type';
+import DeductionReducer from './apps/deduction';
+import EmpAllowanceDeductionReducer from './apps/emp-allowance-deduction';
+import SalaryPayrollReducer from './apps/salary-payroll';
+import HRLoanRequestReducer from './apps/hr-loan-request';
 
 // Create the store
 export const store = configureStore({
@@ -96,7 +102,13 @@ export const store = configureStore({
     financialReport: FinancialReportReducer,
     classTeacher: ClassTeacherReducer,
     notificationConfig: NotificationConfigReducer,
-    classTimetable: ClassTimetableReducer
+    classTimetable: ClassTimetableReducer,
+    attendance: AttendanceReducer,
+    allowanceType: AllowanceTypeReducer,
+    deduction: DeductionReducer,
+    empAllowanceDeduction: EmpAllowanceDeductionReducer,
+    salaryPayroll: SalaryPayrollReducer,
+    hrLoanRequest: HRLoanRequestReducer,
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({

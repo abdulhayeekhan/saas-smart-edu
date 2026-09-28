@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useContext, createContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { GetChildAccount } from '../../../../store/apps/campus-coa';
+import { FEE_RECEIPT_HEAD_ACCOUNT_ID } from '../../../../environment';
 
 export const useCampusFeeRecAccount = () => {
   const dispatch = useDispatch();
@@ -17,7 +18,7 @@ export const useCampusFeeRecAccount = () => {
       try {
         const data = await dispatch(
           GetChildAccount({
-            id: 88
+            id: FEE_RECEIPT_HEAD_ACCOUNT_ID
           })
         ).unwrap(); // prevents stale payload
 

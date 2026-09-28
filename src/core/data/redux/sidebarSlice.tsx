@@ -4,6 +4,7 @@ const initialState = {
   mobileSidebar: false,
   miniSidebar: false,
   expandMenu: false,
+  sidebarLoaded: false,
 };
 const sidebarSlice = createSlice({
   name: "sidebar",
@@ -21,10 +22,18 @@ const sidebarSlice = createSlice({
     setExpandMenu: (state, { payload }) => {
       state.expandMenu = payload;
     },
+    setSidebarLoaded: (state, { payload }) => {
+      state.sidebarLoaded = payload;
+    },
   },
 });
 
-export const { setMobileSidebar, setMiniSidebar, setExpandMenu, toggleMiniSidebar } =
-  sidebarSlice.actions;
+export const {
+  setMobileSidebar,
+  setMiniSidebar,
+  setExpandMenu,
+  toggleMiniSidebar,
+  setSidebarLoaded,
+} = sidebarSlice.actions;
 
 export default sidebarSlice.reducer;

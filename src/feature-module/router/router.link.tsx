@@ -146,6 +146,12 @@ import StaffPayRoll from "../hrm/staff-list/staff-payroll.tsx";
 import StaffLeave from "../hrm/staff-list/staff-leave";
 import AppCampusEmployee from "../hrm/campus-employee/index";
 import AddCampusEmployee from "../hrm/campus-employee/addCampusEmployee";
+import EmployeeProfile from "../hrm/campus-employee/employeeProfile";
+import AllowanceTypes from "../hrm/allowance-type";
+import Deductions from "../hrm/deduction";
+import SalaryPayrollList from "../hrm/salary-payroll";
+import SalaryPayrollProcess from "../hrm/salary-payroll/SalaryPayrollProcess";
+import HrVoucher from "../hrm/hr-voucher";
 import ApproveRequest from "../hrm/leaves/approve-request";
 import TeacherList from "../peoples/teacher/teacher-list";
 import TeacherDetails from "../peoples/teacher/teacher-details/teacherDetails";
@@ -261,6 +267,10 @@ import StudentReport from "../report/student-report/studentReport";
 import DefaulterReport from "../report/defaulter-report";
 import ClassReport from "../report/class-report/classReport";
 import AttendanceReport from "../report/attendance-report/attendanceReport";
+import SalaryReport from "../report/salary-report";
+import EmployeeLedgerReport from "../report/employee-ledger-report";
+import Reports from "../report/index";
+import Settings from "../settings/index";
 import ContactMessages from "../support/contactMessages";
 import Events from "../announcements/events";
 import Profile from "../pages/profile";
@@ -1069,6 +1079,46 @@ export const publicRoutes = [
   {
     path: routes.editCampusEmployee,
     element: <AddCampusEmployee />,
+  },
+  {
+    path: routes.campusEmployeeProfile,
+    element: <EmployeeProfile />,
+  },
+  {
+    path: routes.allowanceTypes,
+    element: <AllowanceTypes />,
+  },
+  {
+    path: routes.deductions,
+    element: <Deductions />,
+  },
+  {
+    path: routes.salaryPayroll,
+    element: <SalaryPayrollList />,
+  },
+  {
+    path: routes.salaryPayrollProcess,
+    element: <SalaryPayrollProcess />,
+  },
+  {
+    path: routes.hrVoucher,
+    element: <HrVoucher />,
+  },
+  {
+    path: routes.salaryReport,
+    element: <SalaryReport />,
+  },
+  {
+    path: routes.employeeLedgerReport,
+    element: <EmployeeLedgerReport />,
+  },
+  {
+    path: routes.reports,
+    element: <Reports />,
+  },
+  {
+    path: routes.settings,
+    element: <Settings />,
   },
   {
     path: routes.listLeaves,

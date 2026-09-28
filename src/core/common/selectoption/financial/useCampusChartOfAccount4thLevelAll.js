@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { GetChildAccount } from "../../../../store/apps/ho-coa";
-import { BANK_ACCOUNT_PARENT_ID } from "../../../../environment";
+import { GetAccountsLevelWise } from "../../../../store/apps/campus-coa";
 
-export const useHOBankAccount = (campusId) => {
+export const useCampusChartOfAccount4thLevelAll = (campusId) => {
   const dispatch = useDispatch();
 
   const [options, setOptions] = useState([
@@ -11,17 +10,17 @@ export const useHOBankAccount = (campusId) => {
   ]);
 
   useEffect(() => {
-    // clear previous options immediately when campus changes
+    // reset immediately when campusId changes
     setOptions([{ value: "", label: "-- SELECT ACCOUNT --" }]);
 
     const fetchData = async () => {
       try {
         const data = await dispatch(
-          GetChildAccount({
-            id: BANK_ACCOUNT_PARENT_ID,
-            campusId: campusId ?? 0
+          GetAccountsLevelWise({
+            accountLevel: 4,
+            campusId: campusId ?? 0 // null → HO
           })
-        ).unwrap(); // prevents stale payload
+        ).unwrap();
 
         const mappedData = (data ?? []).map(item => ({
           value: item.id,
@@ -33,7 +32,7 @@ export const useHOBankAccount = (campusId) => {
           ...mappedData
         ]);
       } catch (error) {
-        //API failed / 404 → keep dropdown empty
+        // API error / 404 → no stale data
         setOptions([{ value: "", label: "-- SELECT ACCOUNT --" }]);
       }
     };

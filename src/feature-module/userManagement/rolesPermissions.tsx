@@ -10,7 +10,7 @@ import PredefinedDateRanges from "../../core/common/datePicker";
 import { Link } from "react-router-dom";
 import { all_routes } from "../router/all_routes";
 import TooltipOption from "../../core/common/tooltipOption";
-import { GetAllRoles, createRole } from '../../store/apps/roles'
+import { GetAllRoles, createRole, updateRole, DeleteRole } from '../../store/apps/roles'
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
 
@@ -70,11 +70,82 @@ const RolesPermissions = () => {
   //____________________________________________________________________________________
 
   //******************start edit role functionality start*************** */
+  const [editRoleInfo, setEditRoleInfo] = useState<{
+    id: number;
+    name: string;
+    description: string;
+    roleType: number;
+    isEnabled: boolean;
+  }>({
+    id: 0,
+    name: "",
+    description: "",
+    roleType: 0,
+    isEnabled: true,
+  });
 
+  const handleEditClick = (record: any) => {
+    setEditRoleInfo({
+      id: record.id,
+      name: record.name || "",
+      description: record.description || "",
+      roleType: record.roleType ?? 0,
+      isEnabled: record.isEnabled ?? true,
+    });
+  };
 
+  const handleEditChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
 
+    setEditRoleInfo((prev) => ({
+      ...prev,
+      [name]:
+        e.target instanceof HTMLInputElement && e.target.type === "checkbox"
+          ? e.target.checked
+          : value,
+    }));
+  };
+
+  const handleEditRoleTypeChange = (value: string | number) => {
+    const roletypeid = Number(value);
+    setEditRoleInfo((prev) => ({
+      ...prev,
+      roleType: roletypeid,
+    }));
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const result = await dispatch(updateRole(editRoleInfo));
+      if (updateRole.fulfilled.match(result)) {
+        fetchRoles();
+      }
+    } catch (error) {
+      console.error("Error updating role:", error);
+    }
+  };
   //******************end edit role functionality start***************** */
 
+  //******************start delete role functionality start************* */
+  const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
+
+  const handleDeleteConfirm = async () => {
+    if (selectedRoleId !== null) {
+      try {
+        const result = await dispatch(DeleteRole(selectedRoleId));
+        if (DeleteRole.fulfilled.match(result)) {
+          fetchRoles();
+          setSelectedRoleId(null);
+        }
+      } catch (error) {
+        console.error("Error deleting role:", error);
+      }
+    }
+  };
+  //******************end delete role functionality end*************** */
 
   // Select data from the Redux store
 
@@ -97,18 +168,15 @@ const RolesPermissions = () => {
     }
   };
   useEffect(() => {
-
-
     fetchRoles();
   }, [dispatch]);
-  //const data = rolesPermissionsData;
 
   const columns = [
     {
       title: "Role Name",
       dataIndex: "name",
       sorter: (a: TableData, b: TableData) =>
-        a.name.length - b.name.length,
+        (a.name || "").length - (b.name || "").length,
     },
 
     {
@@ -142,12 +210,12 @@ const RolesPermissions = () => {
           )}
         </>
       ),
-      sorter: (a: any, b: any) => a.status.length - b.status.length,
+      sorter: (a: any, b: any) => (a.roleType ?? 0) - (b.roleType ?? 0),
     },
     {
       title: "Action",
       dataIndex: "action",
-      render: (_: unknown, record: { id: number; name: string }) => (
+      render: (_: unknown, record: any) => (
         <>
           <div className="d-flex align-items-center">
             <Link
@@ -155,6 +223,7 @@ const RolesPermissions = () => {
               className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
               data-bs-toggle="modal"
               data-bs-target="#edit_role"
+              onClick={() => handleEditClick(record)}
             >
               <i className="ti ti-edit-circle text-primary" />
             </Link>
@@ -169,6 +238,7 @@ const RolesPermissions = () => {
               className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
               data-bs-toggle="modal"
               data-bs-target="#delete-modal"
+              onClick={() => setSelectedRoleId(record.id)}
             >
               <i className="ti ti-trash-x text-danger" />
             </Link>
@@ -366,17 +436,68 @@ const RolesPermissions = () => {
                   <i className="ti ti-x" />
                 </button>
               </div>
-              <form >
+              <form onSubmit={handleEditSubmit}>
                 <div className="modal-body">
                   <div className="row">
                     <div className="col-md-12">
-                      <div className="mb-0">
-                        <label className="col-form-label">Role Name</label>
+                      <div className="mb-2">
+                        <label className="form-label">Role Name</label>
                         <input
                           type="text"
+                          name="name"
+                          value={editRoleInfo.name}
+                          placeholder="Enter Role Name"
+                          onChange={handleEditChange}
                           className="form-control"
-                          defaultValue="Admin"
+                          required
                         />
+                      </div>
+                    </div>
+                    <div className="col-md-12">
+                      <div className="mb-2">
+                        <label className="form-label">Description</label>
+                        <input
+                          type="text"
+                          name="description"
+                          value={editRoleInfo.description}
+                          onChange={handleEditChange}
+                          placeholder="Enter description"
+                          className="form-control"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-md-12">
+                      <div className="mb-2">
+                        <label className="form-label">Role Type</label>
+                        <CommonSelect2
+                          className="select"
+                          options={roletypes}
+                          onChange={(option) => handleEditRoleTypeChange(option ? option.value : 0)}
+                          defaultValue={roletypes.find((item) => item.value === editRoleInfo.roleType) || roletypes[0]}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-md-12">
+                      <div className="mb-2">
+                        <div className="d-flex align-items-center justify-content-between">
+                          <div className="status-title">
+                            <h5>Status IsEnabled</h5>
+                            <p>Change the Status by toggle</p>
+                          </div>
+                          <div className="form-check form-switch">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              name="isEnabled"
+                              checked={editRoleInfo.isEnabled}
+                              onChange={handleEditChange}
+                              role="switch"
+                              id="switch-edit-role"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -389,9 +510,14 @@ const RolesPermissions = () => {
                   >
                     Cancel
                   </Link>
-                  <Link to="#" className="btn btn-primary" data-bs-dismiss="modal">
+                  <button
+                    type="submit"
+                    disabled={!editRoleInfo.name || editRoleInfo.roleType === 0}
+                    className="btn btn-primary"
+                    data-bs-dismiss="modal"
+                  >
                     Save Changes
-                  </Link>
+                  </button>
                 </div>
               </form>
             </div>
@@ -402,27 +528,31 @@ const RolesPermissions = () => {
         <div className="modal fade" id="delete-modal">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
-              <form >
+              <form onSubmit={(e) => { e.preventDefault(); handleDeleteConfirm(); }}>
                 <div className="modal-body text-center">
                   <span className="delete-icon">
                     <i className="ti ti-trash-x" />
                   </span>
                   <h4>Confirm Deletion</h4>
                   <p>
-                    You want to delete all the marked items, this cant be undone
-                    once you delete.
+                    You want to delete this role, this cant be undone once you delete.
                   </p>
                   <div className="d-flex justify-content-center">
-                    <Link
-                      to="#"
+                    <button
+                      type="button"
                       className="btn btn-light me-3"
                       data-bs-dismiss="modal"
                     >
                       Cancel
-                    </Link>
-                    <Link to="#" className="btn btn-danger" data-bs-dismiss="modal">
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      data-bs-dismiss="modal"
+                      onClick={handleDeleteConfirm}
+                    >
                       Yes, Delete
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </form>

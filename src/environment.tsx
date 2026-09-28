@@ -28,3 +28,8 @@ export const feeTermsConditions = `1. Fee paid after the due date is subject to 
 6. Fee will be accepted through HBL Connect / 1-Link.
 7. Fee will be increased every academic year.
 8. We reserve all legal rights and remedies.`;
+
+export const CASH_ACCOUNT_HEAD_ID = Number(process.env.REACT_APP_CASH_ACCOUNT_HEAD_ID) || 88;
+export const BANK_ACCOUNT_PARENT_ID = Number(process.env.REACT_APP_BANK_ACCOUNT_PARENT_ID) || 86;
+export const FEE_RECEIPT_HEAD_ACCOUNT_ID = Number(process.env.REACT_APP_FEE_RECEIPT_HEAD_ACCOUNT_ID) || 88;
+export const DISCOUNT_HEAD_ID = Number(process.env.REACT_APP_DISCOUNT_HEAD_ID) || 30;

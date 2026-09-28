@@ -251,6 +251,8 @@ export const all_routes = {
   feeInvoices: "/fee-management-system/fee-invoices",
   feeReceipt: "/fee-management-system/fee-receipt",
   bulkFeeReceipt: "/fee-management-system/bulk-fee-receipt",
+  multiFeeReceipt: "/fee-management-system/multi-fee-receipt",
+  feeSettlement: "/fee-management-system/fee-settlement",
   bulkFeePrint: "/fee-management-system/bulk-fee-print",
   accountSetting: "/fee-management-system/account-setting",
   discountType: "/management/discount-type",
@@ -308,6 +310,13 @@ export const all_routes = {
   campusEmployee: "/hrm/campus-employee",
   addCampusEmployee: "/hrm/add-campus-employee",
   editCampusEmployee: "/hrm/edit-campus-employee/:id",
+  campusEmployeeProfile: "/hrm/campus-employee-profile/:id",
+  allowanceTypes: "/hrm/allowance-types",
+  deductions: "/hrm/deductions",
+  salaryPayroll: "/hrm/salary-payroll",
+  salaryPayrollProcess: "/hrm/salary-payroll/:id",
+  hrVoucher: "/hrm/hr-voucher",
+  hrLoanRequest: "/hrm/loan-requests",
   listLeaves: "/hrm/list-leaves",
   staffDetails: "/hrm/staff-details",
   staffPayroll: "/hrm/staff-payroll",
@@ -336,6 +345,11 @@ export const all_routes = {
   cpvoucher: "/accounts/cash-payment-voucher",
   crvoucher: "/accounts/cash-receipt-voucher",
   journalvoucher: "/accounts/journal-voucher",
+  campusJournalVoucher: "/accounts/campus-journal-voucher",
+  campusbpvoucher: "/accounts/campus-bank-payment-voucher",
+  campusbrvoucher: "/accounts/campus-bank-receipt-voucher",
+  campuscpvoucher: "/accounts/campus-cash-payment-voucher",
+  campuscrvoucher: "/accounts/campus-cash-receipt-voucher",
   openningBalance: "/accounts/openning-balance",
   campusOpenningBalance: "/accounts/campus-openning-balance",
   ledgerReports: "/accounts/ledger-reports",
@@ -358,6 +372,9 @@ export const all_routes = {
   govtNotices: "/announcements/govt-notices",
 
   //Report
+  reports: "/reports",
+  salaryReport: "/reports/salary-report",
+  employeeLedgerReport: "/reports/employee-ledger-report",
   attendanceReport: "/report/attendance-report",
   classReport: "/report/class-report",
   studentReport: "/report/student-report",
@@ -380,5 +397,6 @@ export const all_routes = {
   staffDayWise: "/report/staff-day-wise",
   //page module
   profile:"/pages/profile",
-  activity:"/pages/activities"
+  activity:"/pages/activities",
+  settings: "/settings",
 };

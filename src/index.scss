@@ -1614,6 +1614,88 @@ body.app-chat {
   color: #ffffff !important;
 }
 
+// ----------------------------------------------------
+// Category Hub (Reports and Settings landing pages)
+// ----------------------------------------------------
+$hub-accents: (
+  "academic": #3d5ee1,
+  "financial": #0f9d58,
+  "hrm": #7b3fe4,
+  "system": #e2861a,
+);
+
+.hub-tile {
+  cursor: pointer;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out,
+    transform 0.2s ease-in-out;
+}
+
+.hub-section {
+  border-top: 3px solid transparent;
+  overflow: hidden;
+
+  .card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .hub-section-badge {
+    color: #fff;
+  }
+
+  .hub-tile {
+    background-color: #fff;
+  }
+
+  @each $name, $color in $hub-accents {
+    &--#{$name} {
+      border-top-color: $color;
+
+      .card-header {
+        background-color: rgba($color, 0.1);
+      }
+
+      .card-body {
+        background-color: rgba($color, 0.035);
+      }
+
+      .hub-section-icon,
+      .hub-tile-icon {
+        background-color: rgba($color, 0.15);
+        color: $color;
+      }
+
+      .hub-section-badge {
+        background-color: $color;
+      }
+
+      .hub-tile:hover {
+        border-color: $color !important;
+        box-shadow: 0 4px 12px rgba($color, 0.2);
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+.dark-data-theme .hub-section {
+  .hub-tile {
+    background-color: #131022;
+  }
+
+  @each $name, $color in $hub-accents {
+    &--#{$name} {
+      .card-header {
+        background-color: rgba($color, 0.18);
+      }
+
+      .card-body {
+        background-color: rgba($color, 0.07);
+      }
+    }
+  }
+}
+
+
 
 
 

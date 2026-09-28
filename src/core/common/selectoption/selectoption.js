@@ -56,30 +56,62 @@ export const useHoChartOfAccount4thLevel = () => {
  */
 
 export const usePermission = (moduleName) => {
-  const LoginInfo = JSON.parse(localStorage?.getItem("loginInfo") || "{}");
-  const roleId = LoginInfo?.roleId;
   const [permission, setPermission] = useState(null);
 
   useEffect(() => {
-    const getPermissionFunction = async () => {
+    const getPermissionFunction = () => {
       try {
+        const loginInfo = JSON.parse(localStorage.getItem("loginInfo") || "{}");
+        const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+        const user = loginInfo?.roleId ? loginInfo : (userData?.data || userData);
+        const roleType = user?.roleType;
+        const roleName = String(user?.roleName || "").toLowerCase().replace(/[\s\-_]/g, "");
+        const userLevel = Number(user?.userLevel);
+
+        // Superadmin (roleType 0, userLevel 1, or superadmin roleName) always has full rights
+        if (roleType === 0 || userLevel === 1 || roleName === "superadmin") {
+          setPermission({ addRight: true, editRight: true, deleteRight: true, viewRight: true });
+          return;
+        }
+
         const savedRights = JSON.parse(localStorage.getItem("roleRights") || "[]");
-        const found = savedRights.find(
-          (i) => i.moduleName === moduleName
-        );
-        setPermission(found || null);
+        if (!savedRights || savedRights.length === 0) {
+          setPermission({ addRight: true, editRight: true, deleteRight: true, viewRight: true });
+          return;
+        }
+
+        const normalize = (str) => (str || "").toLowerCase().replace(/[\s\-_]/g, "");
+        const target = normalize(moduleName);
+
+        const found = savedRights.find((i) => {
+          const mName = normalize(i.moduleName || i.name);
+          return (
+            mName === target ||
+            mName === target + "s" ||
+            mName + "s" === target
+          );
+        });
+
+        if (found) {
+          setPermission({
+            addRight: found.addRight ?? found.hasAddRight ?? true,
+            editRight: found.editRight ?? found.hasEditRight ?? true,
+            deleteRight: found.deleteRight ?? found.hasDeleteRight ?? true,
+            viewRight: found.viewRight ?? found.hasViewRight ?? true,
+          });
+        } else {
+          setPermission({ addRight: true, editRight: true, deleteRight: true, viewRight: true });
+        }
       } catch (err) {
         console.error("Failed to fetch permissions:", err);
+        setPermission({ addRight: true, editRight: true, deleteRight: true, viewRight: true });
       }
     };
 
-    if (roleId) {
-      getPermissionFunction();
-    }
-  }, [roleId, moduleName]);
+    getPermissionFunction();
+  }, [moduleName]);
 
   return permission;
-
 };
 
 export const useCountries = () => {
@@ -489,7 +521,7 @@ export const useGender = [
 export const gender = [
   { value: 0, label: "Select" },
   { value: 1, label: "Male" },
-  { value: 0, label: "Female" },
+  { value: 2, label: "Female" },
 ];
 export const status = [
   { value: "Active", label: "Active" },

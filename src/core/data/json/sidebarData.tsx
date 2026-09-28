@@ -65,7 +65,19 @@ export const SidebarData = [
           },
         ],
       },
-
+      {
+        label: "Dar-e-Arqam Publisher",
+        icon: "ti ti-book",
+        submenu: true,
+        showSubRoute: false,
+        submenuItems: [
+          {
+            label: "Books Order",
+            link: routes.booksOrder,
+            showSubRoute: false,
+          },
+        ],
+      },
     ],
   },
   {
@@ -229,16 +241,26 @@ export const SidebarData = [
       {
         label: "Fee Receipt",
         icon: "ti ti-file-invoice",
-        submenu: false,
+        submenu: true,
         showSubRoute: false,
-        link: routes.feeReceipt
+        submenuItems: [
+          {
+            label: "Single Fee Receipt",
+            link: routes.feeReceipt,
+          },
+          {
+            label: "Multi Fee Receipt",
+            link: routes.multiFeeReceipt,
+          },
+        ]
       },
       {
-        label: "Bulk Fee Receipt",
-        icon: "ti ti-files",
+        label: "Fee Settlement",
+        icon: "ti ti-calculator",
         submenu: false,
         showSubRoute: false,
-        link: routes.bulkFeeReceipt
+        link: routes.feeSettlement,
+        moduleNames: ["Fee Settlement", "Fee Receipt", "Fee Invoices"]
       },
       {
         label: "Security Account Setting",
@@ -325,6 +347,13 @@ export const SidebarData = [
         ],
       },
       {
+        label: "Student Attendance",
+        link: routes.studentAttendance,
+        icon: "ti ti-calendar-share",
+        submenu: false,
+        showSubRoute: false,
+      },
+      {
         label: "Reasons",
         link: routes.AcademicReason,
         icon: "ti ti-lifebuoy",
@@ -333,78 +362,8 @@ export const SidebarData = [
       },
     ],
   },
-  {
-    label: "Academic Settings",
-    submenuOpen: true,
-    showSubRoute: false,
-    submenuHdr: "Academic-Settings",
-
-    submenuItems: [
-      {
-        label: "Sessions",
-        link: routes.classSession,
-        icon: "ti ti-building",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Grades",
-        link: routes.classGrade,
-        icon: "ti ti-building",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Section",
-        link: routes.classSection,
-        icon: "ti ti-square-rotated-forbid-2",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Subjects",
-        link: routes.classSubjects,
-        icon: "ti ti-building",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Religion",
-        link: routes.religion,
-        icon: "ti ti-users-group",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Fees Type",
-        link: routes.feesType,
-        icon: "ti ti-category",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Discount Type",
-        link: routes.discountType,
-        icon: "ti ti-tag",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Discount Setting",
-        link: routes.discountTransactionSetting,
-        icon: "ti ti-tag",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Fees Structure",
-        link: routes.feeStructure,
-        icon: "ti ti-receipt",
-        showSubRoute: false,
-        submenu: false,
-      },
-    ],
-  },
+  // The Academic Settings items moved to the Settings page (feature-module/settings/index.tsx)
+  // → Academic Settings section, alongside the other settings categories.
   {
     label: "MANAGEMENT",
     submenuOpen: true,
@@ -521,27 +480,8 @@ export const SidebarData = [
         showSubRoute: false,
         submenu: false,
       },
-      {
-        label: "Departments",
-        link: routes.departments,
-        icon: "ti ti-layout-distribute-horizontal",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Designation",
-        link: routes.designation,
-        icon: "ti ti-user-exclamation",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Employee Type",
-        link: routes.employeeType,
-        icon: "ti ti-users",
-        showSubRoute: false,
-        submenu: false,
-      },
+      // Departments, Designation, Employee Type, Allowance Type, and Deduction moved to
+      // the Settings page (feature-module/settings/index.tsx) under "HRM Settings".
       {
         label: "Class Teacher",
         link: routes.classTeacher,
@@ -580,9 +520,17 @@ export const SidebarData = [
         submenu: false,
       },
       {
-        label: "Payroll",
-        link: routes.payroll,
+        label: "Salary Payroll",
+        link: routes.salaryPayroll,
+        subLink1: routes.salaryPayrollProcess,
         icon: "ti ti-moneybag",
+        showSubRoute: false,
+        submenu: false,
+      },
+      {
+        label: "HR Voucher",
+        link: routes.hrVoucher,
+        icon: "ti ti-receipt",
         showSubRoute: false,
         submenu: false,
       },
@@ -636,6 +584,11 @@ export const SidebarData = [
           { label: "Cash Payment Voucher", link: routes.cpvoucher },
           { label: "Cash Receipt Voucher", link: routes.crvoucher },
           { label: "Journal Voucher", link: routes.journalvoucher },
+          { label: "Campus Bank Payment Voucher", link: routes.campusbpvoucher },
+          { label: "Campus Bank Receipt Voucher", link: routes.campusbrvoucher },
+          { label: "Campus Cash Payment Voucher", link: routes.campuscpvoucher },
+          { label: "Campus Cash Receipt Voucher", link: routes.campuscrvoucher },
+          { label: "Campus Journal Voucher", link: routes.campusJournalVoucher },
         ],
       },
 
@@ -659,17 +612,7 @@ export const SidebarData = [
           { label: "Transactions", link: routes.accountsTransactions },
         ],
       },
-      {
-        label: "Financial Reports",
-        moduleName: "Reports",
-        icon: "ti ti-credit-card",
-        submenu: true,
-        showSubRoute: false,
-        submenuItems: [
-          { label: "Ledger Reports", link: routes.ledgerReports },
-          { label: "Collection Report", link: routes.collectionReport },
-        ],
-      },
+      // Ledger Reports and Collection Report moved to the Reports page → Financial Reports.
     ],
   },
   {
@@ -748,111 +691,38 @@ export const SidebarData = [
     submenu: false,
     showSubRoute: false,
     submenuItems: [
+      // Every individual report now lives on the Reports page (feature-module/report/index.tsx),
+      // grouped into Academic / Financial / HRM sections. Add new reports there, not here —
+      // but do add the new module name to moduleNames below, or the entry can disappear for
+      // a role whose only report right is that one.
       {
-        label: "Attendance Report",
-        link: routes.attendanceReport,
-        subLink1: routes.studentAttendanceType,
-        subLink2: routes.staffReport,
-        subLink3: routes.teacherReport,
-        subLink4: routes.staffDayWise,
-        subLink5: routes.teacherDayWise,
-        subLink6: routes.studentDayWise,
-        subLink7: routes.dailyAttendance,
-        icon: "ti ti-calendar-due",
+        label: "Reports",
+        // The entry stands in for every report that used to have its own menu item, so it
+        // stays visible if the role can view any one of them.
+        moduleNames: [
+          "Reports",
+          "Attendance Report",
+          "Salary Report",
+          "Class Report",
+          "Student Report",
+          "Defaulter Report",
+          "Campus Admission Status Report",
+          "Contact List",
+          "Branch Expense Report",
+          "Grade Report",
+          "Leave Report",
+          "Fees Report",
+          "Invoice Receipt Summary",
+          "Student Strength Report",
+          "Average Fee Report",
+          "Ledger Reports",
+          "Collection Report",
+        ],
+        link: routes.reports,
+        icon: "ti ti-report-analytics",
         showSubRoute: false,
         submenu: false,
       },
-      {
-        label: "Class Report",
-        link: routes.classReport,
-        icon: "ti ti-graph",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Student Report",
-        link: routes.studentReport,
-        icon: "ti ti-chart-infographic",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Defaulter Report",
-        moduleName: "Defaulter Report",
-        link: routes.defaulterReport,
-        icon: "ti ti-user-x",
-        showSubRoute: false,
-        submenu: false,
-      },
-
-
-      {
-        label: "Campus Admission Status Report",
-        moduleName: "Campus Admission Status Report",
-        link: routes.campusAdmissionStatusReport,
-        icon: "ti ti-chart-bar",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Contact List",
-        moduleName: "Contact List",
-        link: routes.contactList,
-        icon: "ti ti-address-book",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Branch Expense Report",
-        moduleName: "Branch Expense Report",
-        link: routes.branchExpenseReport,
-        icon: "ti ti-receipt",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Grade Report",
-        link: routes.gradeReport,
-        icon: "ti ti-calendar-x",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Leave Report",
-        link: routes.leaveReport,
-        icon: "ti ti-line",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Fees Report",
-        link: routes.feesReport,
-        icon: "ti ti-mask",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Invoice Receipt Summary",
-        link: routes.invoiceReceiptSummaryReport,
-        icon: "ti ti-file-analytics",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Student Strength Report",
-        link: routes.studentStrengthReport,
-        icon: "ti ti-file-analytics",
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: "Average Fee Report",
-        link: routes.averageFeeReport,
-        icon: "ti ti-file-analytics",
-        showSubRoute: false,
-        submenu: false,
-      },
-
     ],
   },
   {
@@ -1123,149 +993,39 @@ export const SidebarData = [
     showSubRoute: false,
     submenuHdr: "Settings",
     submenuItems: [
+      // Every settings screen now lives on the Settings page (feature-module/settings/index.tsx),
+      // grouped into categories. Add new settings there, not here — but do add the new module
+      // name to moduleNames below, or the entry can disappear for a role whose only settings
+      // right is that one. The template settings screens (General / Website / App / Financial /
+      // Other) stay routed but unlinked until they are actually built.
       {
-        label: "General Settings",
-        submenu: true,
-        showSubRoute: false,
-        icon: "ti ti-shield-cog",
-        submenuItems: [
-          { label: "Profile Settings", link: routes.profilesettings },
-          { label: "Security Settings", link: routes.securitysettings },
-          {
-            label: "Notifications Settings",
-            link: routes.notificationssettings,
-          },
-          { label: "Connected Apps", link: routes.connectedApps },
+        label: "Settings",
+        moduleNames: [
+          "Settings",
+          "Sessions",
+          "Grades",
+          "Section",
+          "Subjects",
+          "Religion",
+          "Fees Type",
+          "Discount Type",
+          "Discount Setting",
+          "Fees Structure",
+          "Departments",
+          "Designations",
+          "Designation",
+          "EmployeeType",
+          "Employee Type",
+          "Allowance Types",
+          "Allowance Type",
+          "Deductions",
+          "Deduction",
+          "Notification Config",
         ],
-      },
-      {
-        label: "Website Settings",
-        submenu: true,
+        link: routes.settings,
+        icon: "ti ti-settings",
         showSubRoute: false,
-        icon: "ti ti-device-laptop",
-        submenuItems: [
-          {
-            label: "Company Settings",
-            link: routes.companySettings,
-            showSubRoute: false,
-          },
-          {
-            label: "Localization",
-            link: routes.localization,
-            showSubRoute: false,
-          },
-          { label: "Prefixes", link: routes.prefixes, showSubRoute: false },
-          { label: "Preference", link: routes.preference, showSubRoute: false },
-          {
-            label: "Social Authentication",
-            link: routes.socialAuthentication,
-            showSubRoute: false,
-          },
-          {
-            label: "Language",
-            link: routes.language,
-            showSubRoute: false,
-          },
-        ],
-      },
-      {
-        label: "App Settings",
-        submenu: true,
-        showSubRoute: false,
-        icon: "ti ti-apps",
-        submenuItems: [
-          {
-            label: "Invoice Settings",
-            link: routes.invoiceSettings,
-            showSubRoute: false,
-          },
-          {
-            label: "Custom Fields",
-            link: routes.customFields,
-            showSubRoute: false,
-          },
-        ],
-      },
-      {
-        label: "System Settings",
-        submenu: true,
-        showSubRoute: false,
-        icon: "ti ti-file-symlink",
-        submenuItems: [
-          {
-            label: "Email Settings",
-            link: routes.emailSettings,
-            showSubRoute: false,
-          },
-          {
-            label: "Email Templates",
-            link: routes.emailTemplates,
-            showSubRoute: false,
-          },
-          {
-            label: "SMS Settings",
-            link: routes.smsSettings,
-            showSubRoute: false,
-          },
-          {
-            label: "OTP",
-            link: routes.optSettings,
-            showSubRoute: false,
-          },
-          {
-            label: "Notification Config",
-            link: routes.notificationSettings,
-            moduleName: "Settings",
-            showSubRoute: false,
-          },
-          {
-            label: "GDPR Cookies",
-            link: routes.gdprCookies,
-            showSubRoute: false,
-          },
-        ],
-      },
-      {
-        label: "Financial Settings",
-        submenu: true,
-        showSubRoute: false,
-        icon: "ti ti-zoom-money",
-        submenuItems: [
-          {
-            label: "Payment Gateway",
-            link: routes.paymentGateways,
-            showSubRoute: false,
-          },
-          { label: "Tax Rates", link: routes.taxRates, showSubRoute: false },
-        ],
-      },
-      {
-        label: "Academic Settings",
-        submenu: true,
-        showSubRoute: false,
-        icon: "ti ti-calendar-repeat",
-        submenuItems: [
-          {
-            label: "School Settings",
-            link: routes.schoolSettings,
-            showSubRoute: false,
-          },
-          { label: "Religion", link: routes.religion, showSubRoute: false },
-        ],
-      },
-      {
-        label: "Other Settings",
-        submenu: true,
-        showSubRoute: false,
-        icon: "ti ti-flag-cog",
-        submenuItems: [
-          { label: "Storage", link: routes.storage, showSubRoute: false },
-          {
-            label: "Ban IP Address",
-            link: routes.banIpAddress,
-            showSubRoute: false,
-          },
-        ],
+        submenu: false,
       },
     ],
   },
@@ -1294,7 +1054,7 @@ export const SidebarData = [
             showSubRoute: false,
           },
           { label: "Breadcrumb", link: routes.breadcrums, showSubRoute: false },
-          { label: "Card", link: routes.cards, showSubRoute: false },
+          { label: "Card", link: routes.cards, showSubRoute: false, superAdminOnly: true },
           { label: "Carousel", link: routes.carousel, showSubRoute: false },
           { label: "Colors", link: routes.colors, showSubRoute: false },
           { label: "Dropdowns", link: routes.dropdowns, showSubRoute: false },

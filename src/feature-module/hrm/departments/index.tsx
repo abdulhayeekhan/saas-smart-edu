@@ -45,9 +45,36 @@ const Departments = () => {
   const [filterDept, setFilterDept] = useState<any>(null);
   const [filterStatus, setFilterStatus] = useState<any>(null);
 
+  const getNextSortOrder = (deptList: any) => {
+    if (!Array.isArray(deptList) || deptList.length === 0) return 1;
+    const maxOrder = Math.max(...deptList.map((d: any) => Number(d.sortOrder) || 0), 0);
+    return maxOrder + 1;
+  };
+
+  const handleOpenAddModal = () => {
+    setAddForm({
+      name: '',
+      description: '',
+      isOvertimeAllowed: false,
+      isHO: false,
+      isEnabled: true,
+      isDeleted: false,
+      sortOrder: getNextSortOrder(data)
+    });
+  };
+
   useEffect(() => {
     dispatch(GetAllDepartments({ pageNo: 1, pageSize: 100, search: "" }));
   }, [dispatch]);
+
+  useEffect(() => {
+    if (Array.isArray(data) && data.length > 0) {
+      setAddForm(prev => ({
+        ...prev,
+        sortOrder: prev.sortOrder === 0 && !prev.name ? getNextSortOrder(data) : prev.sortOrder
+      }));
+    }
+  }, [data]);
 
   const handleApplyClick = () => {
     if (dropdownMenuRef.current) {
@@ -59,7 +86,7 @@ const Departments = () => {
     e.preventDefault();
     await dispatch(AddDepartment(addForm)).then((res: any) => {
       if (!res.error) {
-        // Reset form
+        // Reset form with next sort order
         setAddForm({
           name: '',
           description: '',
@@ -67,7 +94,7 @@ const Departments = () => {
           isHO: false,
           isEnabled: true,
           isDeleted: false,
-          sortOrder: 0
+          sortOrder: getNextSortOrder(data) + 1
         });
         document.getElementById('close-add-modal')?.click();
       }
@@ -248,6 +275,7 @@ const Departments = () => {
                     className="btn btn-primary d-flex align-items-center"
                     data-bs-toggle="modal"
                     data-bs-target="#add_department"
+                    onClick={handleOpenAddModal}
                   >
                     <i className="ti ti-square-rounded-plus me-2" />
                     Add Department
