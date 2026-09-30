@@ -1,7 +1,3 @@
-import DiscountTransactionSetting from "../acdemic-manager/discount-setting";
-import SingleFeeGenerate from "../fee-management-system/single-fee-generate";
-
-
 export const all_routes = {
   // dashboard routes
   adminDashboard: "/",
@@ -378,7 +374,10 @@ export const all_routes = {
   attendanceReport: "/report/attendance-report",
   classReport: "/report/class-report",
   studentReport: "/report/student-report",
+  studentLedgerReport: "/report/student-ledger-report",
   defaulterReport: "/report/defaulter-report",
+  defaulterListReport: "/report/defaulter-list-report",
+  defaulterSummaryReport: "/report/defaulter-summary-report",
   averageFeeReport: "/report/average-fee-report",
   campusAdmissionStatusReport: "/report/campus-admission-status-report",
   contactList: "/report/contact-list",

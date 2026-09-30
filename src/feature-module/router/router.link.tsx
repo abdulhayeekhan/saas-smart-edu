@@ -264,7 +264,8 @@ import BranchExpenseReport from "../report/branch-expense-report/BranchExpenseRe
 import LeaveReport from "../report/leave-report/leaveReport";
 import GradeReport from "../report/grade-report/gradeReport";
 import StudentReport from "../report/student-report/studentReport";
-import DefaulterReport from "../report/defaulter-report";
+import DefaulterReport, { DefaulterListReport, DefaulterSummaryReport } from "../report/defaulter-report";
+import StudentLedgerReport from "../report/student-ledger-report/studentLedgerReport";
 import ClassReport from "../report/class-report/classReport";
 import AttendanceReport from "../report/attendance-report/attendanceReport";
 import SalaryReport from "../report/salary-report";
@@ -293,12 +294,10 @@ import ChartOfAccount from "../accounts/chart-of-account";
 import CampusChartOfAccount from "../accounts/campus-chart-of-account";
 import BankPaymentVoucher from "../accounts/vouchers/bank-payment-voucher";
 import BankReceiptVoucher from "../accounts/vouchers/bank-receipt-voucher";
-import path from "path";
 import CashPaymentVoucher from "../accounts/vouchers/cash-payment-voucher";
 import CashReceiptVoucher from "../accounts/vouchers/cash-receipt-voucher";
 import JournalVoucher from "../accounts/vouchers/Journal-voucher";
 import SchoolFinancialAudit from "../accounts/financial-audit";
-import { route } from "../../core/common/selectoption/selectoption";
 import RegionsList from "../management/campus-management/regions";
 import FeesInvoices from "../fee-management-system/fee-invoices";
 import BulkFeePrint from "../fee-management-system/bulk-fee-print";
@@ -1611,8 +1610,20 @@ export const publicRoutes = [
     element: <StudentReport />,
   },
   {
+    path: routes.studentLedgerReport,
+    element: <StudentLedgerReport />,
+  },
+  {
     path: routes.defaulterReport,
     element: <DefaulterReport />,
+  },
+  {
+    path: routes.defaulterListReport,
+    element: <DefaulterListReport />,
+  },
+  {
+    path: routes.defaulterSummaryReport,
+    element: <DefaulterSummaryReport />,
   },
   {
     path: routes.classReport,

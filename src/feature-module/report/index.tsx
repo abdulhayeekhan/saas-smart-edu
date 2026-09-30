@@ -53,6 +53,13 @@ const SECTIONS: HubSection[] = [
         description: "Full student listing with filters",
       },
       {
+        label: "Student Ledger Report",
+        moduleName: "Student Report",
+        link: routes.studentLedgerReport,
+        icon: "ti ti-notebook",
+        description: "Detailed debit/credit ledger for any student",
+      },
+      {
         label: "Grade Report",
         link: routes.gradeReport,
         icon: "ti ti-award",
@@ -87,23 +94,24 @@ const SECTIONS: HubSection[] = [
     accent: "financial",
     tiles: [
       {
-        label: "Fees Report",
-        link: routes.feesReport,
-        icon: "ti ti-receipt-2",
-        description: "Fee invoices raised over a period",
-      },
-      {
         label: "Collection Report",
         link: routes.collectionReport,
         icon: "ti ti-coins",
         description: "What was actually collected, by day and head",
       },
       {
-        label: "Defaulter Report",
+        label: "Defaulter Summary Report",
         moduleName: "Defaulter Report",
-        link: routes.defaulterReport,
-        icon: "ti ti-user-x",
-        description: "Students with outstanding fee balances",
+        link: routes.defaulterSummaryReport,
+        icon: "ti ti-user-exclamation",
+        description: "Executive and class-wise fee defaulter summary",
+      },
+      {
+        label: "Defaulter List Report",
+        moduleName: "Defaulter Report",
+        link: routes.defaulterListReport,
+        icon: "ti ti-list-details",
+        description: "Detailed listing of students with pending dues",
       },
       {
         label: "Average Fee Report",
@@ -116,6 +124,12 @@ const SECTIONS: HubSection[] = [
         link: routes.invoiceReceiptSummaryReport,
         icon: "ti ti-file-analytics",
         description: "Invoiced against received, side by side",
+      },
+      {
+        label: "Fees Report",
+        link: routes.feesReport,
+        icon: "ti ti-receipt-2",
+        description: "Fee invoices raised over a period",
       },
       {
         label: "Branch Expense Report",
